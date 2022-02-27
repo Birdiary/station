@@ -1,4 +1,4 @@
-# countYourBirds - station
+# CountYourBirds - station
 Environmental changes can have different causes on local level (e.g. soil sealing) as well as on global level (e.g. climate change). To detect these changes and to find patterns in the reasons for them it is necessary to collect broad environmental data, temporally and spatially. Thereto citizens can play an essential role to collect the data. In particular, we developed a system which enables citizens to monitor the occurrence and distribution of birds and provides the collected data to the public in order that both researchers and citizens can derive conclusions from them. With our automated approach we want to support other citizen science solutions like eBird where contributors manually report their sightings.
 
 Therefore, we built a prototypical bird feeder equipped with several sensors and the infrastructure to process the data collected by the feeder.
