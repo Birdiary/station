@@ -16,7 +16,7 @@ import adafruit_dht
 from board import *
 
 # Read config.yaml file
-with open("config.yaml", 'r') as stream:
+with open("/home/pi/station/config.yaml", 'r') as stream:
     yamlData = yaml.safe_load(stream)
     
 serverUrl = yamlData["server"]["url"]
@@ -75,6 +75,29 @@ def send_movement(files, box_id):
 
 
 print ("CountYourBirds Start")
+
+
+
+# Setup balance  
+import sys
+EMULATE_HX711=False
+
+if not EMULATE_HX711:
+    import RPi.GPIO as GPIO
+    from balance.hx711 import HX711
+else:
+    from balance.emulated_hx711 import HX711
+
+hx = HX711(17, 18)
+
+hx.set_reading_format("MSB", "MSB")
+hx.set_reference_unit(-1093) # -295000/270 = -1093
+print ("Balance Setup done")
+
+
+
+
+
 #Setup DHT22 
 SENSOR_PIN = D16 # use not board but GPIO number 
 dht22 = adafruit_dht.DHT22(SENSOR_PIN, use_pulseio=False)
@@ -113,6 +136,7 @@ try:
    if read==1 and wait==0: 
      print ("ALARM: Movement recognized at" + str(datetime.now())) 
      wait=1
+     HILFSVARIABLE = 1
      
      movementStartDate = datetime.now()
      movementPath = mainPath + 'movement'
@@ -129,8 +153,15 @@ try:
      # raw json variable to collection all sensor data during a movement 
      detection_data = {}
      
-     # add movement sensor  
-     weight = 35 
+     # Add sensor values to detection   
+     # Add weight 
+     hx.power_up()
+     hx.reset()
+     hx.tare()
+      
+     weight = hx.get_weight(17)   
+     
+     hx.power_down()
      
      detection_data[0] = {
          "date": str(movementStartDate),
@@ -150,7 +181,7 @@ try:
      movementEndDate = datetime.now()
      
      # after movement is over detections are investigated for birds
-     os.system('python3 birdDetection.py --modeldir=models/Sample_TF_Lite_Model --imagedir ' + mainPath +'/movement')
+     os.system('python3 /home/pi/station/birdDetection.py --modeldir=/home/pi/station/models/Sample_TF_Lite_Model --imagedir ' + mainPath +'/movement')
      
      # set movement_data
      movement_data["start_date"] = str(movementStartDate)
@@ -215,7 +246,8 @@ try:
 
 
    # if there is currently a movement 
-   elif read==1 and wait==1:
+   elif read==1 and wait==1 and HILFSVARIABLE!=1:
+      # Achtung hier nochmal prüfen ohne HILFSVARIABLE wird diese Schleife auch ausgeführt, wenn oben erste Schleife startet. 
       print ("Waiting for movement end for " + str(sleepCounter))
       sleepCounter+=triggerWaitingTime
       time.sleep(triggerWaitingTime)
@@ -225,13 +257,21 @@ try:
       detectionPath = movementPath + '/detection' + str(detectionCounter)
       os.makedirs(detectionPath)
       
-      # Add movement sensor 
+      # Add sensor values to detection   
       date = str(datetime.now())
-      weigth = 35
+      
+      # Add weight 
+      hx.power_up()
+      hx.reset()
+      hx.tare()
+      
+      weight = hx.get_weight(17)               
+
+      hx.power_down()
       
       detection_data[detectionCounter] = {
          "date": date,
-         "weight": weigth}      
+         "weight": weight}      
      
       # Add image
       camera.capture(detectionPath + '/image.jpg')
