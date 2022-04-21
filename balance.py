@@ -150,7 +150,7 @@ def track_movement():
                  movementData["start_date"] = str(movementStartDate)
                  movementData["end_date"] = str(movementEndDate)
                  movementData["audio"] = "audioKey"
-                 movementData["weight"] = str(np.median(values))
+                 movementData["weight"] = np.median(values)
                  movementData["video"] = "videoKey"
                  
                  try:
