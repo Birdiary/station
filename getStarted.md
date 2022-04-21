@@ -78,6 +78,8 @@
 # Setup Birdiary 
 - Eingabe im Terminal: `cd /home/pi/`
 - Eingabe im Terminal: `git clone https://github.com/CountYourBirds/station.git` 
+- Erstelle unter https://wiediversistmeingarten.org/react/createbox deine eigene Station
+- Kopiere die Box-Id in die config.yaml-Datei im Ordner `/home/pi/station`
 
 # Ermöglichung des Zugriffs auf den Raspberry Pi via VNC  
 - Eingabe im Terminal: `sudo nano /boot/config.txt` (detaillierte Anleitung für die Veränderung der Datei hier: https://www.shellhacks.com/raspberry-pi-force-hdmi-hotplug/)
