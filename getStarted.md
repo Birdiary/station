@@ -1,35 +1,43 @@
 # Vorbereitung Pi 
 - Installiere den Raspberry Pi Imager auf deinem lokalen Computer (Den Imager findest du hier: https://www.raspberrypi.com/software/)
-- Verbinde die SD Karte, die später einmal im Raspberry Pi genutzt wird, mit deinem Computer 
-- Da alle Daten auf der SD Karte gelöscht werden, solltest du eventuelle Daten vor den folgenden Schritten abgespeichert haben 
-- Starte den Raspberry Pi Imager und wähle dann im User Interface "Raspberry PI OS (32-BIT)" als Betriebssystem aus 
-- Wähle im User Interface des Raspberry Pi Imager, die SD Karte aus, die du eben mit deinem Computer verbunden hast 
-- Um den Prozess, der Betriebssystemübertragung zu beginnen, wähle entsprechend "SCHREIBEN" aus 
-- Bestätige, dass alle Daten auf der SD Karte gelöscht werden können 
-- Sobald die Bestätigung angezeigt wird, dass "Raspberry Pi OS (32-bit)" auf der eingelegten SD Karte gespeichert wurde, kann diese vom Computer entfernt werden und in den Raspberry Pi eingelegt werden 
+- Verbinde die SD Karte, die später einmal im Raspberry Pi genutzt wird, mit deinem Computer (in der Regel kannst du die Micro SD Karte mit einem beigelegten Adapter in deinen PC stecken)
+  - Da alle Daten auf der SD Karte gelöscht werden, solltest du eventuelle Daten vor den folgenden Schritten abgespeichert haben 
+  - Starte den Raspberry Pi Imager und wähle dann im User Interface "Raspberry PI OS (32-BIT)" als Betriebssystem aus 
+    - Wähle im User Interface des Raspberry Pi Imager, die SD Karte aus, die du eben mit deinem Computer verbunden hast 
+    - Um den Prozess, der Betriebssystemübertragung zu beginnen, wähle entsprechend "SCHREIBEN" aus 
+    - Bestätige, dass alle Daten auf der SD Karte gelöscht werden können 
+  - Sobald die Bestätigung angezeigt wird, dass "Raspberry Pi OS (32-bit)" auf der eingelegten SD Karte gespeichert wurde, kann diese vom Computer entfernt werden und in den Raspberry Pi eingelegt werden (der Slot dafür ist auf der Unterseite des RaspberryPi, gegenüber der USB-Anschlüsse)
+    - Solange das Überspielen auf die SD-Karte läuft, können schon die nächsten Schritte bis zum Stromanschluss durchgeführt werden  
 - Nutze zwei der vier USB Ports am Raspberry Pi um sowohl Tastatur, als auch eine Maus an den Raspberry Pi anzuschließen 
 - Nutze den Mini-HDMI Port mit der Aufschrift "HDMI0" um einen Bildschrim mit dem Raspberry Pi zu verbinden
 - Optional wäre über "HDMI1" ein weiter Bildschirm verbindbar 
-- Schließe ein USB-C Kabel an der Buchse mit der Bezeichnung "POWER IN" an, um den Raspberry Pi mit dem Strom zu verbinden 
-- Sofern dein Bildschirm eingeschaltet ist, sollte der Raspberry Pi nun starten und eine graphische Nutzerberfläche angezeigt werden 
+- Schließe das RaspberryPi Netzteil an der Buchse mit der Bezeichnung "POWER IN" an, um den Raspberry Pi mit dem Strom zu verbinden 
+- Sofern dein Bildschirm eingeschaltet ist, sollte der Raspberry Pi nun starten und eine graphische Nutzerberfläche angezeigt werden, dies kann ein paar Minuten dauern. 
 
 # initiales Starten Raspberry Pi  
 - Es kann sein, dass es zu der Meldung kommt "Resized root file system. Rebooting in 5 seconds". Dann einfach abwarten und der Raspberry Pi startet selbständig erneut 
 - Erscheint die Oberfläche, gilt es noch einige Einstellungen durchzuführen 
-- Zunächst können Land, Sprache und Zeitzone eingestellt werden 
-- Anschließend können Nutzername und Passwort spezifiziert werden 
-- Anschließend kann die Bildschirmgröße angepasst werden 
-- Dann ist es möglich, dass WiFi Network festzulegen, dies am besten gleich tun 
+  - Zunächst können Land, Sprache und Zeitzone eingestellt werden 
+  - Anschließend können Nutzername und Passwort spezifiziert werden (in der Regel 
+  - Anschließend kann die Bildschirmgröße angepasst werden 
+  - Dann ist es möglich, dass WiFi Network festzulegen, dies am besten gleich tun 
 - Anschließend kann optional das Betriebssystem aktualisiert werden 
 - Mit einem Neustart wird der Raspberry Pi dann nutzbar  
 
 # initiales Setup Raspberry Pi 
+Für die folgenden Schritte öffnest du am einfachsten dieses Repository in dem Browser (Globus Icon, oben links neben der Himbeere) deines Raspberry Pi, um die Kommandos zu kopieren. 
+
+Zur Info: Eingaben im Terminal können getätigt werden, wenn die (grüne) Zeile `pi@raspberry: ~ $` erscheint. Dies ist auch das Zeichen für eine abgeschlossene Eingabe / Installation.
+
 ## Kamera 
+- Öffne das Terminal (Shortcut: Strg + Alt + T)
 - Eingabe im Terminal: `sudo raspi-config`
-- Auswahl von: 3 Interface Options  
-- Auswahl von: I1 Legacy Camera
-- Auswahl von: Ja
-- Auswahl von: Finish  
+  - Navigation mit Pfeiltasten
+  - Auswahl von: 3 Interface Options  
+  - Auswahl von: I1 Legacy Camera
+  - Auswahl von: Ja
+  - Auswahl von: Finish  
+  - Auswahl von: Ja (Reboot)
 
 ## Installation verschiedener Pakete 
 - Eingabe im Terminal: `pip3 install pyyaml` (Definition der Parameter)
@@ -47,6 +55,7 @@
 - Für die vorherigen drei Schritte ist eine detaillierte Anleitung unter folgendem Link zu finden: https://learn.adafruit.com/adafruit-i2s-mems-microphone-breakout/raspberry-pi-wiring-test 
 - Eingabe im Terminal: `sudo apt-get install libatlas-base-dev libportaudio2 libasound-dev`
 - Eingabe im Terminal: `python3 -m pip install --user sounddevice`
+  - Gegebenenfalls im Terminal bestätigen durch die Eingabe von `j` und Enter. 
 - Eingabe im Terminal: `python3 -m pip install --user scipy`
 - Für die vorherigen drei Schritte ist eine detaillierte Anleitung unter folgendem Link zu finden: https://github.com/Infineon/i2s-microphone/wiki/Raspberry-Pi-Audio-Processing-with-Python 
 
@@ -62,10 +71,16 @@
 - "-" -> Port 9 (GND) 
 
 ## Waage 
-- VCC -> Port 2 (5 V)  
-- SCK -> Port 16 (GPIO 23) 
-- DT  -> Port 11 (GPIO 17)
-- GND -> Port 6 (GND)
+- Kabel von der Waage (Dehnungsmessstreifen) zur Wägezelle:
+  - Rot: E+ 
+  - Schwarz: E-
+  - Grün: A-
+  - Weiß: A+
+- Kabel vom Pi zur Wägezelle:
+  - VCC -> Port 2 (5 V)  
+  - SCK -> Port 16 (GPIO 23) 
+  - DT  -> Port 11 (GPIO 17)
+  - GND -> Port 6 (GND)
 
 ## Mikrofon 
 - SEL -> Port 39 (GND)
