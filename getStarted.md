@@ -61,8 +61,10 @@ Zur Info: Eingaben im Terminal können getätigt werden, wenn die (grüne) Zeile
 
 # Hardware anschließen 
 
+Die Belegung und Nummerierung der Pins / Ports des Raspberry Pi kann unter anderem hier nachgeguckt werden: https://www.raspberrypi-spy.co.uk/wp-content/uploads/2012/06/Raspberry-Pi-GPIO-Header-with-Photo.png 
+
 ## Kamera 
-- Das breite Kamerakabel an einem Ende an die Kamera anschließen und am anderen Ende an den RasperryPi (an den Anschluss der mit Kamera betitelt ist), so, dass das blaue Ende zu den USB Anschlüssen zeigt 
+- Das breite weiße Kamerakabel an einem Ende an die Kamera anschließen und am anderen Ende an den RasperryPi (an den Anschluss der mit Kamera betitelt ist), so, dass das blaue Ende zu den USB Anschlüssen zeigt 
 - Das Kabel lässt sich sowohl an Pi als auch an Kamera durch das hochziehen, der grauen Abdeckung befestigen. Dieses anschließend wieder runterdrücken um das Kabel zu fixieren 
 
 ## Luftfeuchte und Temperatursensor 
@@ -95,35 +97,49 @@ Zur Info: Eingaben im Terminal können getätigt werden, wenn die (grüne) Zeile
 - Eingabe im Terminal: `git clone https://github.com/CountYourBirds/station.git` 
 - Erstelle unter https://wiediversistmeingarten.org/react/createbox deine eigene Station
 - Kopiere die Box-Id in die config.yaml-Datei im Ordner `/home/pi/station`
+- Navigiere in den Ordner station und öffne die `config.yaml`-Datei mit geany (Rechtsclick auf die Datei -> Geany)
+  - Kopiere die Box-id an die entsprechende Stelle in der Datei
+  - Speichere die Datei (Shortcut: Str + S)
 
 # Ermöglichung des Zugriffs auf den Raspberry Pi via VNC  
 - Eingabe im Terminal: `sudo nano /boot/config.txt` (detaillierte Anleitung für die Veränderung der Datei hier: https://www.shellhacks.com/raspberry-pi-force-hdmi-hotplug/)
-- Setze den Paramter hdmi_force_hotplug auf 1: `hdmi_force_hotplug=1` 
-- Setze den Parameter hdmi_group auf 1: `hdmi_group=1`
-- Setze den Parameter hdmi_mode auf 16: `hdmi_mode=16`
+  - Navigiere mit den Pfeiltasten der Tastatur zu den den folgenden Zeilen, entferne die Rauten am Anfang der Zeilen und nimm die entsprechenden Anpassungen vor:
+    - Setze den Paramter hdmi_force_hotplug auf 1: `hdmi_force_hotplug=1`  
+    - Setze den Parameter hdmi_group auf 1: `hdmi_group=1`
+    - Setze den Parameter hdmi_mode auf 16: `hdmi_mode=16`
+  - Zum Speichern: 
+    - `Strg`+ `O` 
+    - `Enter`
+    - `Strg`+ `X` 
 - Eingabe im Terminal: `sudo raspi-config`
-- Auswahl von: 2 Display Options
-- Auswahl von: D5 VNC Resolution  
-- Auswahl von: 1920x1080
-- Auswahl von: OK
-- Auswahl von: 3 Interface Options 
-- Auswahl von: VNC 
-- Auswahl von: Ja 
-- Kurz abwarten und das `VA` Icon anklicken oben rechts neben dem WLAN Zeichen 
+  - Auswahl von: 2 Display Options
+  - Auswahl von: D5 VNC Resolution  
+  - Auswahl von: 1920x1080
+  - Auswahl von: OK
+  - Auswahl von: 3 Interface Options 
+  - Auswahl von: VNC 
+  - Auswahl von: Ja 
+  - Auswahl von: Finish
+  - Auswahl von: Ja (Reboot)
+- Kurz abwarten und das `Va` Icon anklicken oben rechts neben dem WLAN Zeichen 
 - IP Adresse die unter Konnektivität gelistet ist auf Rechner der auf PI zugreifen soll im VNC Viewer eintragen (vorheriger Download der VNC Viewer App für entsprechendes Betriebssystem: https://www.realvnc.com/de/connect/download/viewer/) und mit dem Raspberry Pi verbinden  
 - Passwort und Benutzername des pis entsprechend eintragen
 - Verbindung sollte funktioneren  
 
 # Automatische Ausführung ermöglichen 
 - Eingabe im Terminal: `sudo apt-get install xterm`
+  - Bestätigung mit `J` -> Enter  
 - Eingabe im Terminal: `mkdir -p ~/.config/autostart`
+  - (Das Terminal gibt kein Feedback bei erfolgreicher Ausführung, außer, dass eine neue Zeile und keine Fehlermeldung erscheinen)  
 - Eingabe im Terminal: `nano ~/.config/autostart/lxterm-autostart.desktop`
 - In der Datei einfügen: 
-`[Desktop Entry]
+```
+[Desktop Entry]
 Encoding=UTF-8
 Name=Terminal autostart
 Comment=Start a terminal and list directory
-Exec=/usr/bin/lxterm -e 'bash /home/pi/station/startup.sh'` 
+Exec=/usr/bin/lxterm -e 'bash /home/pi/station/startup.sh'
+```
 - `Strg`+ `O` 
 - `Enter`
-- Eingabe im Terminal: `sudo restart`
+- Eingabe im Terminal: `sudo reboot`
