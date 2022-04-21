@@ -2,11 +2,11 @@
 - Installiere den Raspberry Pi Imager auf deinem lokalen Computer (Den Imager findest du hier: https://www.raspberrypi.com/software/)
 - Verbinde die SD Karte, die später einmal im Raspberry Pi genutzt wird, mit deinem Computer 
 - Da alle Daten auf der SD Karte gelöscht werden, solltest du eventuelle Daten vor den folgenden Schritten abgespeichert haben 
-- Wähle im User Interface des Raspberry Pi Imager "Raspberry PI OS (32-BIT)" als Betriebssystem aus 
+- Starte den Raspberry Pi Imager und wähle dann im User Interface "Raspberry PI OS (32-BIT)" als Betriebssystem aus 
 - Wähle im User Interface des Raspberry Pi Imager, die SD Karte aus, die du eben mit deinem Computer verbunden hast 
 - Um den Prozess, der Betriebssystemübertragung zu beginnen, wähle entsprechend "SCHREIBEN" aus 
 - Bestätige, dass alle Daten auf der SD Karte gelöscht werden können 
-- Sobald die Bestätigung angezeigt wird, dass "Raspberry Pi OS (32-bit) auf der eingelegten SD Karte gespeichert wurde, kann diese vom Computer entfernt werden und in den Raspberry Pi eingelegt werden 
+- Sobald die Bestätigung angezeigt wird, dass "Raspberry Pi OS (32-bit)" auf der eingelegten SD Karte gespeichert wurde, kann diese vom Computer entfernt werden und in den Raspberry Pi eingelegt werden 
 - Nutze zwei der vier USB Ports am Raspberry Pi um sowohl Tastatur, als auch eine Maus an den Raspberry Pi anzuschließen 
 - Nutze den Mini-HDMI Port mit der Aufschrift "HDMI0" um einen Bildschrim mit dem Raspberry Pi zu verbinden
 - Optional wäre über "HDMI1" ein weiter Bildschirm verbindbar 
