@@ -4,4 +4,5 @@ station:
   boxId: 4a936912-65db-475d-bcd6-9ee292079830
   environmentTimeDeltaInMinutes: 2 
   weightThreshold: 5 
-  balanceReferenceUnit: -1020.389
+  calibration_weight: 0
+  terminal_weight: 0
