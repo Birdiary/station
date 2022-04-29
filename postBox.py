@@ -10,7 +10,7 @@ def post_box():
             "mail": {"adresses": ["xxx.xxx@countyourbirds.org"]}
             }
             
-   r = requests.post("https://wiediversistmeingarten.org/api/box", json=payload)
+   r = requests.post("https://wiediversistmeingarten.org/api/station", json=payload)
    print(r.content)
 
 post_box()
