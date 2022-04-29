@@ -19,7 +19,8 @@ serverUrl = yamlData["server"]["url"]
 boxId = yamlData["station"]["boxId"]
 environmentTimeDeltaInMinutes = yamlData["station"]["environmentTimeDeltaInMinutes"] # waiting time to send environment requests 
 weightThreshold = yamlData["station"]["weightThreshold"] # weight which is the threshold to recognize a movement 
-balanceReferenceUnit = yamlData["station"]["balanceReferenceUnit"] # reference unit for the balance
+terminal_weight = yamlData["station"]["terminal_weight"] # reference unit for the balance
+calibration_weight = yamlData["station"]["calibration_weight"] # reference unit for the balance
 
 # Setup Camera 
 print("Setup camera!")
@@ -54,7 +55,10 @@ hx = HX711(17, 23)
 
 hx.set_reading_format("MSB", "MSB")
 # readValueTerminal/referenceValueOnBalance=referenceUnit e.g. -1020389.3333333334/1000 = -1020,389
-hx.set_reference_unit(balanceReferenceUnit)
+
+if calibration_weight != 0:
+    balanceReferenceUnit = terminal_weight/calibration_weight
+    hx.set_reference_unit(balanceReferenceUnit)
 
 hx.power_up()
 hx.reset()
