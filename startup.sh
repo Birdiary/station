@@ -1,5 +1,5 @@
 #!/bin/bash
-echo hello 
+echo "Welcome to Birdiary!" 
 
 cd /home/pi/station
 
@@ -11,19 +11,19 @@ while true; do
   do
      ping -q -c 1 -w 1 www.google.com >/dev/null 2>&1
      ONLINE=$?
-     echo "Internet Test"
+     echo "Internet Test!"
      if [ $ONLINE -ne 0 ]
        then
          sudo ip link set wlan0 down
-         echo "Stop Internet Connection" 
+         echo "Stop Internet Connection!" 
          sleep 5
-         echo "Restart Internet Connection" 
+         echo "Restart Internet Connection!" 
          sudo ip link set wlan0 up
          sleep 15 
      fi
   done
-  echo "We are online!"
-  python3 balance.py &
+  echo "Internet connection is working!"
+  python3 main.py &
   ONLINE=1
   wait $!
 done

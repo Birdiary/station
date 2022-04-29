@@ -1,7 +1,7 @@
-detection:
-  threshold: 0.5
 server:
   url: https://wiediversistmeingarten.org/api/
 station: 
-  boxId: 92396f9c-2319-4847-adee-77a52ac786b2
-  environmentTimeDeltaInMinutes: 1 
+  boxId: 4a936912-65db-475d-bcd6-9ee292079830
+  environmentTimeDeltaInMinutes: 2 
+  weightThreshold: 5 
+  balanceReferenceUnit: -1020.389
