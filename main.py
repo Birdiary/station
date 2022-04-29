@@ -62,10 +62,8 @@ hx.tare()
 
 # Setup Microphone 
 print("Setup microphone!")
-from audio import record
-import threading 
-
-#recorder = threading.Thread(target=record, args=(duration, path))
+from rec_unlimited import record
+from multiprocessing import Process
 
 print("Setup finished!") 
 
@@ -122,7 +120,7 @@ def track_movement():
            if (weight > weightThreshold and len(values) == 0):
               print("Movement recognized!") 
               
-              recorder = threading.Thread(target=record, args=(3, '/home/pi/station/files'))
+              recorder = Process(target=record)
               recorder.start()
               
               movementStartDate = datetime.now()
@@ -130,15 +128,7 @@ def track_movement():
               camera.wait_recording(1) # continue camera recording 
             
               values.append(weight) # add current weight to weight list 
-              
-              # if recorder.is_alive():
-                 # recorder.join()
-                 # print("joined recorder")
-              # if not recorder.is_alive():
-                 # print(str(recorder.is_alive()))
-                 # recorder.start()
-              # else: 
-                 # print("recorder not started")
+
                          
            else: 
            # continue movement if currently recognized weight is above threshold 
@@ -172,11 +162,11 @@ def track_movement():
                  
                  try:
                     if recorder.is_alive():
-                       recorder.join()
+                       recorder.terminate()
                        print("terminated recorder")
                  except: 
                     print("no alive recorder")
-                    
+                 
                  files['audioKey'] = (os.path.basename("/home/pi/station/files/sound.wav"), open("/home/pi/station/files/sound.wav", 'rb'))
                  files['videoKey'] = (os.path.basename('/home/pi/station/files/' + str(movementStartDate) + '.h264'), open('/home/pi/station/files/' + str(movementStartDate) + '.h264', 'rb'))
 
