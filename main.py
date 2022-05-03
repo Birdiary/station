@@ -8,15 +8,20 @@ import requests
 import yaml
 import json
 import logging
+from logging.handlers import TimedRotatingFileHandler
 
-start = datetime.now();
-log_file = "logs/" + start.strftime("%Y-%m-%d_%H-%M-%S") + ".log"
+if not os.path.exists('logs'):
+  os.makedirs('logs')
+
+logname = "logs/birdiary.log"
+file_handler = TimedRotatingFileHandler(logname, when="midnight", interval=1)
+file_handler.suffix = "%Y%m%d"
 
 logging.basicConfig(encoding='utf-8', 
                     level=logging.DEBUG, 
                     format='%(asctime)s %(levelname)s: %(message)s',
                     handlers=[
-                      logging.FileHandler(log_file),
+                      file_handler,
                       logging.StreamHandler(sys.stdout)
                     ]
 )
@@ -156,8 +161,7 @@ def track_movement():
                  logging.info("Currently measured weight: " + str(weight))
 
         
-           hx.power_down()
-           hx.power_up()           
+           hx.reset()          
         
            # stop movement if weight is below threshold 
            if (weight < weightThreshold):
@@ -177,12 +181,7 @@ def track_movement():
                  movementData["weight"] = np.median(values)
                  movementData["video"] = "videoKey"
                  
-                 try:
-                    if recorder.is_alive():
-                       recorder.terminate()
-                       logging.info("terminated recorder")
-                 except: 
-                    logging.info("no alive recorder")
+                 terminate_recorder()
                  
                  files['audioKey'] = (os.path.basename("/home/pi/station/files/sound.wav"), open("/home/pi/station/files/sound.wav", 'rb'))
                  files['videoKey'] = (os.path.basename('/home/pi/station/files/' + str(movementStartDate) + '.h264'), open('/home/pi/station/files/' + str(movementStartDate) + '.h264', 'rb'))
@@ -207,6 +206,19 @@ def track_movement():
                  
        except (KeyboardInterrupt, SystemExit):
            cleanAndExit()
+           
+def cleanAndExit():
+  camera.close()
+  terminate_recorder()
+  sys.exit(0)
+  
+def terminate_recorder():
+  try:
+    if recorder.is_alive():
+      recorder.terminate()
+      logging.info("terminated recorder")
+  except: 
+    logging.debug("no alive recorder")
         
 logging.info("Start Birdiary!")
 track_movement() 
