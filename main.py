@@ -7,11 +7,24 @@ import os
 import requests
 import yaml
 import json
+import logging
 
-print("Start setup!") 
+start = datetime.now();
+log_file = "logs/" + start.strftime("%Y-%m-%d_%H-%M-%S") + ".log"
+
+logging.basicConfig(encoding='utf-8', 
+                    level=logging.DEBUG, 
+                    format='%(asctime)s %(levelname)s: %(message)s',
+                    handlers=[
+                      logging.FileHandler(log_file),
+                      logging.StreamHandler(sys.stdout)
+                    ]
+)
+
+logging.info("Start setup!") 
 
 # Read config.yaml file
-print("Reading configuration file!")
+logging.info("Reading configuration file!")
 with open("/home/pi/station/config.yaml", 'r') as stream:
     yamlData = yaml.safe_load(stream)
     
@@ -23,7 +36,7 @@ terminal_weight = yamlData["station"]["terminal_weight"] # reference unit for th
 calibration_weight = yamlData["station"]["calibration_weight"] # reference unit for the balance
 
 # Setup Camera 
-print("Setup camera!")
+logging.info("Setup camera!")
 import io
 import random
 import picamera
@@ -35,14 +48,14 @@ stream = picamera.PiCameraCircularIO(camera, seconds=5)
 camera.start_recording(stream, format='h264')
 
 # Setup DHT22 (humidity + temperature) 
-print("Setup DHT22!")
+logging.info("Setup DHT22!")
 import adafruit_dht
 from board import *
 SENSOR_PIN = D16 # use not board but GPIO number 
 dht22 = adafruit_dht.DHT22(SENSOR_PIN, use_pulseio=False)
 
 # Setup Balance
-print("Setup balance!")
+logging.info("Setup balance!")
 EMULATE_HX711=False
 
 if not EMULATE_HX711:
@@ -65,36 +78,36 @@ hx.reset()
 hx.tare()
 
 # Setup Microphone 
-print("Setup microphone!")
+logging.info("Setup microphone!")
 from rec_unlimited import record
 from multiprocessing import Process
 
-print("Setup finished!") 
+logging.info("Setup finished!") 
 
 # Function to send environment data to the server
 def send_environment(environment_data, box_id):
     
     r = requests.post(serverUrl + "environment/" + box_id, json=environment_data)
-    print("Environment Data send with the corresponding environment_id: ")
-    print(r.content)
+    logging.info("Environment Data send with the corresponding environment_id: ")
+    logging.info(r.content)
 
 # Function to send a movement to the server 
 def send_movement(files, box_id):
     
     r = requests.post(serverUrl + "movement/" + box_id, files=files)
-    print("Movement Data send with the corresponding movement_id: ")
-    print(r.content)
+    logging.info("Movement Data send with the corresponding movement_id: ")
+    logging.info(r.content)
 
 # Function to track a environment  
 def track_environment(): 
-   print("Collect Environment Data") 
+   logging.info("Collect Environment Data") 
    environment = {}
    environment["date"] = str(datetime.now())
    environment["temperature"] = dht22.temperature
    environment["humidity"] = dht22.humidity
    
-   print("Environment Data: ")
-   print(environment)
+   logging.info("Environment Data: ")
+   logging.info(environment)
                  
    send_environment(environment, boxId)
     
@@ -118,11 +131,11 @@ def track_movement():
            weight = hx.get_weight(17)  
            
            if (weight < weightThreshold  and len(values) == 0):
-              print("Waiting for movement! (currently measured weight: " + str(weight) + ")")
+              logging.info("Waiting for movement! (currently measured weight: " + str(weight) + ")")
            
            # start movement if weight higher than threshold is recognized 
            if (weight > weightThreshold and len(values) == 0):
-              print("Movement recognized!") 
+              logging.info("Movement recognized!") 
               
               recorder = Process(target=record)
               recorder.start()
@@ -140,7 +153,7 @@ def track_movement():
                  values.append(weight)
                  camera.wait_recording(1)
 
-                 print("Currently measured weight: " + str(weight))
+                 logging.info("Currently measured weight: " + str(weight))
 
         
            hx.power_down()
@@ -149,7 +162,7 @@ def track_movement():
            # stop movement if weight is below threshold 
            if (weight < weightThreshold):
               if (len(values) >= 1):
-                 print("Movement ending!") 
+                 logging.info("Movement ending!") 
                  movementEndDate = datetime.now() 
                  
                  duration = (movementEndDate - movementStartDate).total_seconds()                 
@@ -167,9 +180,9 @@ def track_movement():
                  try:
                     if recorder.is_alive():
                        recorder.terminate()
-                       print("terminated recorder")
+                       logging.info("terminated recorder")
                  except: 
-                    print("no alive recorder")
+                    logging.info("no alive recorder")
                  
                  files['audioKey'] = (os.path.basename("/home/pi/station/files/sound.wav"), open("/home/pi/station/files/sound.wav", 'rb'))
                  files['videoKey'] = (os.path.basename('/home/pi/station/files/' + str(movementStartDate) + '.h264'), open('/home/pi/station/files/' + str(movementStartDate) + '.h264', 'rb'))
@@ -181,8 +194,8 @@ def track_movement():
                  else: 
                     movementData["environment"] = {}
                  
-                 print("Movement Data: ")
-                 print(movementData)
+                 logging.info("Movement Data: ")
+                 logging.info(movementData)
                  
                  files["json"] = (None, json.dumps(movementData), 'application/json')
 
@@ -195,7 +208,7 @@ def track_movement():
        except (KeyboardInterrupt, SystemExit):
            cleanAndExit()
         
-print("Start Birdiary!")
+logging.info("Start Birdiary!")
 track_movement() 
 
 
