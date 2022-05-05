@@ -69,6 +69,13 @@ print("Setup microphone!")
 from rec_unlimited import record
 from multiprocessing import Process
 
+soundPath='/home/pi/station/files/sound.wav'
+if os.path.exists(soundPath):
+    os.remove(soundPath)
+    print("Soundfile deleted")
+else:
+    print("There was no soundfile to delete")
+
 print("Setup finished!") 
 
 # Function to send environment data to the server
@@ -87,19 +94,22 @@ def send_movement(files, box_id):
 
 # Function to track a environment  
 def track_environment(): 
-   print("Collect Environment Data") 
-   environment = {}
-   environment["date"] = str(datetime.now())
-   environment["temperature"] = dht22.temperature
-   environment["humidity"] = dht22.humidity
-   
-   print("Environment Data: ")
-   print(environment)
-                 
-   send_environment(environment, boxId)
-    
-   global environmentData 
-   environmentData = environment 
+   try:
+      print("Collect Environment Data") 
+      environment = {}
+      environment["date"] = str(datetime.now())
+      environment["temperature"] = dht22.temperature
+      environment["humidity"] = dht22.humidity
+      
+      print("Environment Data: ")
+      print(environment)
+                  
+      send_environment(environment, boxId)
+      
+      global environmentData 
+      environmentData = environment 
+   except Exception as e:
+      print(e)  
 
 # predefined variables 
 environmentData = None 
