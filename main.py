@@ -9,7 +9,7 @@ import json
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
-dev_mode = False
+dev_mode = True
 if not dev_mode:
     import requests
 
@@ -153,6 +153,18 @@ def track_environment():
 
 # predefined variables 
 environmentData = None 
+sound_filename = None
+video_filename = None
+data_filename = None
+recorder = None
+
+def set_filenames(movementStartDate):
+    global sound_filename
+    sound_filename = 'files/' + str(movementStartDate) + '.wav'
+    global video_filename
+    video_filename = 'files/' + str(movementStartDate) + '.h264'
+    global data_filename
+    data_filename = 'files/' + str(movementStartDate) + '.json'
 
 # Function to track a movement      
 def track_movement(): 
@@ -173,17 +185,17 @@ def track_movement():
            # start movement if weight higher than threshold is recognized 
            if (weight > weightThreshold and len(values) == 0):
               logging.info("Movement recognized!") 
-              
-              recorder = Process(target=record)
-              recorder.start()
-              
               movementStartDate = datetime.now()
+              set_filenames(movementStartDate)
+              
+              global recorder
+              recorder = Process(target=record, args=(sound_filename,))
+              recorder.start()
               
               camera.wait_recording(1) # continue camera recording 
             
               values.append(weight) # add current weight to weight list 
 
-                         
            else: 
            # continue movement if currently recognized weight is above threshold 
               if (weight > weightThreshold):
@@ -192,7 +204,6 @@ def track_movement():
 
                  logging.info("Currently measured weight: " + str(weight))
 
-        
            hx.reset()          
         
            # stop movement if weight is below threshold 
@@ -202,7 +213,7 @@ def track_movement():
                  movementEndDate = datetime.now() 
                  
                  duration = (movementEndDate - movementStartDate).total_seconds()                 
-                 stream.copy_to('/home/pi/station/files/' + str(movementStartDate) + '.h264', seconds=duration+5)
+                 stream.copy_to(video_filename, seconds=duration+5)
                  stream.clear()
                                   
                  movementData = {}
@@ -215,13 +226,12 @@ def track_movement():
                  
                  terminate_recorder()
                  
-                 files['audioKey'] = (os.path.basename("/home/pi/station/files/sound.wav"), open("/home/pi/station/files/sound.wav", 'rb'))
-                 files['videoKey'] = (os.path.basename('/home/pi/station/files/' + str(movementStartDate) + '.h264'), open('/home/pi/station/files/' + str(movementStartDate) + '.h264', 'rb'))
+                 files['audioKey'] = (os.path.basename(sound_filename), open(sound_filename, 'rb'))
+                 files['videoKey'] = (os.path.basename(video_filename), open(video_filename, 'rb'))
 
                  
                  if (environmentData != None):
                     movementData["environment"] = environmentData
-
                  else: 
                     movementData["environment"] = {}
                  
@@ -231,11 +241,13 @@ def track_movement():
                  files["json"] = (None, json.dumps(movementData), 'application/json')
 
                  send_movement(files, boxId)
-                 write_movement(movementData, files)
+                 with open(data_filename, 'w') as jsonfile:
+                    jsonfile.write(files['json'][1])
+                 #write_movement(movementData, files)
                  
                  values = []
-                 os.remove('/home/pi/station/files/sound.wav')
-                 os.remove('/home/pi/station/files/' + str(movementStartDate) + '.h264')
+#                 os.remove('/home/pi/station/files/sound.wav')
+#                 os.remove('/home/pi/station/files/' + str(movementStartDate) + '.h264')
                  
        except (KeyboardInterrupt, SystemExit):
            cleanAndExit()
@@ -246,11 +258,12 @@ def cleanAndExit():
   sys.exit(0)
   
 def terminate_recorder():
-  try:
-    if recorder.is_alive():
-      recorder.terminate()
-      logging.info("terminated recorder")
-  except: 
+  global recorder
+  print('Recorder alive? ' + str(recorder.is_alive()))
+  if recorder.is_alive():
+    recorder.terminate()
+    logging.info("terminated recorder")
+  else:
     logging.debug("no alive recorder")
         
 logging.info("Start Birdiary!")

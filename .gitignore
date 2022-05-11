@@ -1,5 +1,4 @@
-environments/
-movements/
+files/
 logs/
 config.yaml # ignore unless deliberately commited
 
