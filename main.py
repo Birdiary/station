@@ -9,10 +9,12 @@ import json
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
-dev_mode = True
+dev_mode = False
 if not dev_mode:
     import requests
 
+if not os.path.exists('files'):
+    os.makedirs('files')
 if not os.path.exists('logs'):
     os.makedirs('logs')
 
