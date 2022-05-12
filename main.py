@@ -17,6 +17,8 @@ if not os.path.exists('files'):
     os.makedirs('files')
 if not os.path.exists('logs'):
     os.makedirs('logs')
+if not os.path.exists('environments'):
+    os.makedirs('environments')
 
 logname = "logs/birdiary.log"
 file_handler = TimedRotatingFileHandler(logname, when="midnight", interval=1)
@@ -37,7 +39,7 @@ logging.info("Start setup!")
 
 # Read config.yaml file
 logging.info("Reading configuration file!")
-with open("/home/pi/station/config.yaml", 'r') as stream:
+with open("config.yaml", 'r') as stream:
     yamlData = yaml.safe_load(stream)
     
 serverUrl = yamlData["server"]["url"]
@@ -145,7 +147,7 @@ def track_environment():
       logging.info("Environment Data: ")
       logging.info(environment)
                   
-      send_environment(environment, boxId)
+      #send_environment(environment, boxId)
       write_environment(environment)
       
       global environmentData 
@@ -242,7 +244,7 @@ def track_movement():
                  
                  files["json"] = (None, json.dumps(movementData), 'application/json')
 
-                 send_movement(files, boxId)
+                 #send_movement(files, boxId)
                  with open(data_filename, 'w') as jsonfile:
                     jsonfile.write(files['json'][1])
                  #write_movement(movementData, files)

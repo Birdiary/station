@@ -1,5 +1,6 @@
 files/
 logs/
+environments/
 config.yaml # ignore unless deliberately commited
 
 # Byte-compiled / optimized / DLL files
