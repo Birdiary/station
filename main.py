@@ -1,4 +1,5 @@
 import sys
+import shutil
 import time
 import schedule
 import numpy as np
@@ -19,6 +20,8 @@ if not os.path.exists('logs'):
     os.makedirs('logs')
 if not os.path.exists('environments'):
     os.makedirs('environments')
+if not os.path.exists('temp'):
+    os.makedirs('temp')
 
 logname = "logs/birdiary.log"
 file_handler = TimedRotatingFileHandler(logname, when="midnight", interval=1)
@@ -96,44 +99,12 @@ logging.info("Setup microphone!")
 from rec_unlimited import record
 from multiprocessing import Process
 
-soundPath='/home/pi/station/files/sound.wav'
-if os.path.exists(soundPath):
-    os.remove(soundPath)
-    logging.info("Soundfile deleted")
-
 logging.info("Setup finished!") 
-
-# Function to send environment data to the server
-def send_environment(environment_data, box_id):
-    if dev_mode:
-        logging.warning('send_environment deactivated')
-    else:
-        r = requests.post(serverUrl + 'environment/' + box_id, json=environment_data)
-        logging.info('Environment Data send with the corresponding environment_id:')
-        logging.info(r.content)
-    
+ 
 def write_environment(environment_data):
     filename = 'environments/' + environment_data['date'] + '.json'
     with open(filename, 'w') as wfile:
         json.dump(environment_data, wfile)
-
-# Function to send a movement to the server 
-def send_movement(files, box_id):
-    if dev_mode:
-        logging.warning('send_movement deactivated')
-    else:
-        r = requests.post(serverUrl + 'movement/' + box_id, files=files)
-        logging.info('Movement Data send with the corresponding movement_id:')
-        logging.info(r.content)
-    
-def write_movement(movement_data, files):
-    prefix = movement_data['start_date']
-    with open('movements/' + prefix + '.wav', 'wb') as soundfile:
-        soundfile.write(files['audioKey'][1].read())
-    with open('movements/' + prefix + '.h264', 'wb') as videofile:
-        videofile.write(files['videoKey'][1].read())
-    with open('movements/' + prefix + '.json', 'w') as jsonfile:
-        jsonfile.write(files['json'][1])
 
 # Function to track a environment  
 def track_environment(): 
@@ -147,7 +118,6 @@ def track_environment():
       logging.info("Environment Data: ")
       logging.info(environment)
                   
-      #send_environment(environment, boxId)
       write_environment(environment)
       
       global environmentData 
@@ -156,15 +126,16 @@ def track_environment():
       logging.error(e)  
 
 # predefined variables 
-environmentData = None 
-sound_filename = None
+environmentData = None
+audio_filename = None
 video_filename = None
+temp_audio_filename = 'temp/audio.wav'
 data_filename = None
 recorder = None
 
 def set_filenames(movementStartDate):
-    global sound_filename
-    sound_filename = 'files/' + str(movementStartDate) + '.wav'
+    global audio_filename
+    audio_filename = 'files/' + str(movementStartDate) + '.wav'
     global video_filename
     video_filename = 'files/' + str(movementStartDate) + '.h264'
     global data_filename
@@ -193,7 +164,7 @@ def track_movement():
               set_filenames(movementStartDate)
               
               global recorder
-              recorder = Process(target=record, args=(sound_filename,))
+              recorder = Process(target=record, args=(temp_audio_filename,))
               recorder.start()
               
               camera.wait_recording(1) # continue camera recording 
@@ -219,7 +190,7 @@ def track_movement():
                  duration = (movementEndDate - movementStartDate).total_seconds()                 
                  stream.copy_to(video_filename, seconds=duration+5)
                  stream.clear()
-                                  
+                                                   
                  movementData = {}
                  files = {}
                  movementData["start_date"] = str(movementStartDate)
@@ -228,9 +199,11 @@ def track_movement():
                  movementData["weight"] = np.median(values)
                  movementData["video"] = "videoKey"
                  
+                 # stop audio recording and move temporary file to output directory 
                  terminate_recorder()
+                 shutil.move(temp_audio_filename, audio_filename)
                  
-                 files['audioKey'] = (os.path.basename(sound_filename), open(sound_filename, 'rb'))
+                 files['audioKey'] = (os.path.basename(audio_filename), open(audio_filename, 'rb'))
                  files['videoKey'] = (os.path.basename(video_filename), open(video_filename, 'rb'))
 
                  
@@ -244,14 +217,10 @@ def track_movement():
                  
                  files["json"] = (None, json.dumps(movementData), 'application/json')
 
-                 #send_movement(files, boxId)
                  with open(data_filename, 'w') as jsonfile:
                     jsonfile.write(files['json'][1])
-                 #write_movement(movementData, files)
                  
                  values = []
-#                 os.remove('/home/pi/station/files/sound.wav')
-#                 os.remove('/home/pi/station/files/' + str(movementStartDate) + '.h264')
                  
        except (KeyboardInterrupt, SystemExit):
            cleanAndExit()
@@ -263,7 +232,6 @@ def cleanAndExit():
   
 def terminate_recorder():
   global recorder
-  print('Recorder alive? ' + str(recorder.is_alive()))
   if recorder.is_alive():
     recorder.terminate()
     logging.info("terminated recorder")
