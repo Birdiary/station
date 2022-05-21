@@ -8,6 +8,10 @@ import requests
 import yaml
 import json
 
+sys.stdout = open('/home/pi/station/log/main.log','a+')
+sys.stderr = open('/home/pi/station/log/error.log','a+')
+
+
 print("Start setup!") 
 
 # Read config.yaml file
@@ -206,7 +210,10 @@ def track_movement():
            cleanAndExit()
         
 print("Start Birdiary!")
-track_movement() 
+track_movement()
+sys.stdout.close()
+sys.stderr.close()
+
 
 
 

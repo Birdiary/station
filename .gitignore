@@ -1,0 +1,6 @@
+files/!defaultSound.wav
+#exclude Files that are stored in /files
+files/*
+#exclude Logfiles
+log/*
+__*
