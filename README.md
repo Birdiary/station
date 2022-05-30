@@ -1,16 +1,16 @@
-# CountYourBirds - station
+# Birdiary - station
 Environmental changes can have different causes on local level (e.g. soil sealing) as well as on global level (e.g. climate change). To detect these changes and to find patterns in the reasons for them it is necessary to collect broad environmental data, temporally and spatially. Thereto citizens can play an essential role to collect the data. In particular, we developed a system which enables citizens to monitor the occurrence and distribution of birds and provides the collected data to the public in order that both researchers and citizens can derive conclusions from them. With our automated approach we want to support other citizen science solutions like eBird where contributors manually report their sightings.
 
 Therefore, we built a prototypical bird feeder equipped with several sensors and the infrastructure to process the data collected by the feeder.
 The feeder is easy to reproduce at a reasonable price by following an open available manual. This allows anyone to build the feeder on their own, enabling a large distribution at many locations. The feeder automatically detects when a bird is visiting it, takes an image of the bird, determines the species and connects the observation with environmental data like the temperature or light intensity. All the collected data are published on a developed open access platform. Incorporating other surrounding factors like the proximity of the feeder station to the next forest or a large street allows it to pursue various questions regarding the occurrence of birds. One of them might ask, how does the immediate environment affect bird abundance? Or do sealed surfaces have a negative effect compared to a flowering garden?
 
 This repository contains the code to run the bird feeder which is equipped among other things with a motion sensor, camera, balance, microphone and further environmental sensors. 
-All the collected data is send to a server which is based on this [webserver](https://github.com/CountYourBirds/webserver). 
+All the collected data is send to a server which is based on this [webserver](https://github.com/Birdiary/webserver). 
 The repositories are currently still under development, the code for the operation of the feeder as well as for the web server are continuously updated. 
 A corresponding manual for the operation of the system including open source instructions for building the feeder will follow soon. 
 
 CountYourBirds is a project by a group of students at the Institute for Geoinformatics at the University of Münster. 
-If you got any questions contact us via: [info@countyourbirds.org](mailto:info@countyourbirds.org).
+If you got any questions contact us via: [info@birdiary.de](mailto:info@birdiary.de).
 
 ## How to Contribute
 Thank you for considering contributing to Birdiary. Birdiary is an open source project, and we love to receive contributions from our community — you!
