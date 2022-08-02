@@ -16,3 +16,7 @@ y n | sudo python3 i2smic.py
 sudo apt-get install libatlas-base-dev libportaudio2 libasound-dev
 yes | python3 -m pip install --user sounddevice
 python3 -m pip install --user scipy
+
+yes | sudo apt-get install xterm
+mkdir -p ~/.config/autostart
+cp /home/pi/station/lxterm-autostart.desktop ~/.config/autostart
