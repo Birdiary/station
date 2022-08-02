@@ -20,3 +20,6 @@ python3 -m pip install --user scipy
 yes | sudo apt-get install xterm
 mkdir -p ~/.config/autostart
 cp /home/pi/station/lxterm-autostart.desktop ~/.config/autostart
+
+sudo raspi-config nonint do_camera 0
+sudo raspi-config nonint do_i2c 0
