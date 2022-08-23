@@ -20,6 +20,10 @@ There are many ways to contribute, from writing tutorials or blog posts, improvi
 We use GitHub to host code, to track issues and feature requests, as well as accept pull requests.
  
 This Repository comprises the code and issues for the station. Which means, if you want to contribute to the code running on the station, please contribute here. __Contributions in this repository do not have to stick to the code. They can also be about the hardware or design of the station.__ Whereas when you want to contribute to the webserver(website), please use this repository https://github.com/Birdiary/webserver
+
+### Run your own station
+In the GitHub wiki you can find information on how to build and run your own Birdiary. If you have any ideas for improvement of the manual or the station itself, feel free to inform us.
+
 ### Reporting bugs
 If you find a security vulnerability, do NOT open an issue. Email info@wiediversistmeingarten.org instead.
  
