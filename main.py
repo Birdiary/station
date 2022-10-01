@@ -78,7 +78,7 @@ SENSOR_PIN = D16  # use not board but GPIO number
 dht22 = adafruit_dht.DHT22(SENSOR_PIN, use_pulseio=False)
 
 # Setup Balance
-print("Setup balanceC")
+print("Setup balance!")
 logger.info("Setup balance!")
 EMULATE_HX711 = False
 
