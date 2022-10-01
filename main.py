@@ -109,7 +109,7 @@ if os.path.exists(soundPath):
     logger.info('Soundfile deleted')
 else:
     print("There was no soundfile to delete")
-    logger.warning('There was no soundfile to delete')
+    logger.info('There was no soundfile to delete')
 
 print("Setup finished!")
 logger.info('### Setup finished! ###')
@@ -135,6 +135,7 @@ def send_movement(files, box_id):
 def track_environment():
     try:
         print("Collect Environment Data")
+        logger.info('Collect Environment Data')
         environment = {}
         environment["date"] = str(datetime.now())
         environment["temperature"] = dht22.temperature
@@ -149,7 +150,7 @@ def track_environment():
         environmentData = environment
     except Exception as e:
         print(e)
-        logger.exception(e)
+        logger.exception(e, exc_info=True)
 
 
 # predefined variables
