@@ -4,3 +4,4 @@ files/*
 #exclude Logfiles
 log/*
 __*
+balance/__*
