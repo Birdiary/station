@@ -1,6 +1,7 @@
 import sys
 import time
 import logging
+from logging.handlers import RotatingFileHandler
 import schedule
 import numpy as np
 from datetime import datetime, timedelta
@@ -10,12 +11,16 @@ import yaml
 import json
 
 sys.stderr = open('/home/pi/station/log/error.log', 'a+')
-sys.stderr.write('#########New Logging Section' + str(datetime.now()) + ' ############')
+sys.stderr.write('#########New Logging Section ' + str(datetime.now()) + ' ############\n')
 
 # Create and configure logger
 loglevel = logging.INFO  # Default Logging level if nothing is set in the config.yaml
+rotfilehandler = logging.handlers.RotatingFileHandler(
+    filename="/home/pi/station/log/main.log",
+    maxBytes=250 * 1024,
+    backupCount=5)
 LOG_FORMAT = "%(asctime)s %(levelname)s  %(module)s: %(message)s"  # set Logging Format
-logging.basicConfig(filename="/home/pi/station/log/main.log", level=loglevel, format=LOG_FORMAT)
+logging.basicConfig(level=loglevel, format=LOG_FORMAT, handlers=[rotfilehandler])
 logger = logging.getLogger()
 
 print("Start setup!")
@@ -46,9 +51,9 @@ weightThreshold = yamlData["station"]["weightThreshold"]  # weight which is the 
 terminal_weight = yamlData["station"]["terminal_weight"]  # reference unit for the balance
 calibration_weight = yamlData["station"]["calibration_weight"]  # reference unit for the balance
 
-logger.debug(
-    'serverUrl: %s; boxId: %s; environmentTimeDeltaInMinutes: %s; weightThreshold: %s; terminal_weight: %s ;calibration_weight: %s' \
-    % (serverUrl, boxId, environmentTimeDeltaInMinutes, weightThreshold, terminal_weight, calibration_weight))
+logger.debug('Configfile data: serverUrl: %s; boxId: %s; environmentTimeDeltaInMinutes: \
+            %s; weightThreshold: %s; terminal_weight: %s ;calibration_weight: %s'
+             % (serverUrl, boxId, environmentTimeDeltaInMinutes, weightThreshold, terminal_weight, calibration_weight))
 
 # Setup Camera 
 print("Setup camera!")
@@ -109,7 +114,7 @@ if os.path.exists(soundPath):
     logger.info('Soundfile deleted')
 else:
     print("There was no soundfile to delete")
-    logger.warning('There was no soundfile to delete')
+    logger.info('There was no soundfile to delete')
 
 print("Setup finished!")
 logger.info('### Setup finished! ###')
@@ -120,7 +125,9 @@ def send_environment(environment_data, box_id):
     r = requests.post(serverUrl + "environment/" + box_id, json=environment_data)
     print("Environment Data send with the corresponding environment_id: ")
     print(r.content)
-    logger.info("Environment Data send with the corresponding environment_id: %s" % r.content)
+    logger.info('Environment Data send to Server')
+    logger.debug('Environment Post Request Data: URL: %s ; status_code: %s; Text: %s ;json: %s' %
+                 (r.url, r.status_code, r.text, environment_data))
 
 
 # Function to send a movement to the server
@@ -128,13 +135,16 @@ def send_movement(files, box_id):
     r = requests.post(serverUrl + "movement/" + box_id, files=files)
     print("Movement Data send with the corresponding movement_id: ")
     print(r.content)
-    logger.info('Movement Data send with the corresponding movement_id: %s' % r.content)
+    logger.info('Movement Data send with to Server')
+    logger.debug('Movement Post Request Data: URL: %s ; status_code: %s; Text: %s ;Content: %s' %
+                 (r.url, r.status_code, r.text, files))
 
 
 # Function to track a environment
 def track_environment():
     try:
         print("Collect Environment Data")
+        logger.info('Collect Environment Data')
         environment = {}
         environment["date"] = str(datetime.now())
         environment["temperature"] = dht22.temperature
@@ -149,7 +159,7 @@ def track_environment():
         environmentData = environment
     except Exception as e:
         print(e)
-        logger.exception(e)
+        logger.exception(e, exc_info=True)
 
 
 # predefined variables
