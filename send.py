@@ -46,13 +46,13 @@ def send_environment(filename, server_url, box_id):
 		logging.warning('received: ' + str(data))
 	else:
 		try:
-			r = requests.post(server_url + 'environment/' + box_id, json=data, timeout=5)
+			r = requests.post(server_url + 'environment/' + box_id, json=data, timeout=20)
 			logging.info('Following environment data send:')
 			logging.info(data)
 			logging.info('Corresponding environment_id:')
 			logging.info(r.content)
 		except (requests.ConnectionError, requests.Timeout) as exception:
-			logging.warning('No internet connection.')
+			logging.warning('No internet connection. ' + str(exception))
 		else:
 			os.remove(filename)
 			
@@ -71,13 +71,14 @@ def send_movement(video_filename, audio_filename, data_filename, server_url, box
 		logging.warning('received: ' + str(video_filename) + ' ' + str(audio_filename) + ' ' + str(data_filename))
 	else:
 		try:
-			r = requests.post(serverUrl + 'movement/' + box_id, files=files, timeout=5)
+			logging.debug(serverUrl + 'movement/' + box_id)
+			r = requests.post(serverUrl + 'movement/' + box_id, files=files, timeout=60)
 			logging.info('Following movement data send:')
 			logging.info(files)
 			logging.info('Corresponding movement_id:')
 			logging.info(r.content)
 		except (requests.ConnectionError, requests.Timeout) as exception:
-			logging.warning('No internet connection.')
+			logging.warning('No internet connection. ' + str(exception))
 		else:
 			os.remove(video_filename)
 			os.remove(audio_filename)
@@ -96,7 +97,7 @@ def send_data():
 		send_movement(video, audio, data, serverUrl, boxId)
 	logging.info('Job done. Returning in one hour.')
 
-schedule.every(1).hours.do(send_data)
+schedule.every(20).minutes.do(send_data)
 
 schedule.run_all()
 while True:
