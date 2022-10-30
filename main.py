@@ -35,8 +35,7 @@ logging.basicConfig(encoding='utf-8',
                       logging.StreamHandler(sys.stdout)
                     ]
 )
-
-logging.info('dev_mode=' + str(dev_mode))
+logger = logging.getLogger()
 
 logging.info("Start setup!") 
 
@@ -45,12 +44,34 @@ logging.info("Reading configuration file!")
 with open("config.yaml", 'r') as stream:
     yamlData = yaml.safe_load(stream)
     
+# parse loglevel if present
+try:  # make it backward compatible to older Versions
+    loglevel = yamlData["misc"]["loglevel"]
+    if loglevel == 0 or loglevel == 10 or loglevel == 20 or loglevel == 30 or loglevel == 40 or loglevel == 50:
+        # referring to https://docs.python.org/3/library/logging.html#logging-levels
+        logger.setLevel(loglevel)
+    else:
+        logger.error("Loglevel in configuration file wrong")
+except:
+    logger.error("loglevel in configuration not set")
+
+# parse dev_mode if present
+try:  # make it backward compatible to older Versions
+    dev_mode = yamlData["misc"]["dev_mode"]
+except:
+    dev_mode = False
+    logger.error("dev_mode in configuration not set, disabled by default")
+
 serverUrl = yamlData["server"]["url"]
 boxId = yamlData["station"]["boxId"]
 environmentTimeDeltaInMinutes = yamlData["station"]["environmentTimeDeltaInMinutes"] # waiting time to send environment requests 
 weightThreshold = yamlData["station"]["weightThreshold"] # weight which is the threshold to recognize a movement 
 terminal_weight = yamlData["station"]["terminal_weight"] # reference unit for the balance
 calibration_weight = yamlData["station"]["calibration_weight"] # reference unit for the balance
+
+logging.info('loglevel=' + str(loglevel))
+logging.info('dev_mode=' + str(dev_mode))
+logging.info('environmentTimeDeltaInMinutes=' + str(environmentTimeDeltaInMinutes))
 
 # Setup Camera 
 logging.info("Setup camera!")

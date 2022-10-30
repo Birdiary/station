@@ -13,8 +13,6 @@ from logging.handlers import TimedRotatingFileHandler
 import schedule
 import time
 
-dev_mode = False
-
 logname = "logs/send.log"
 file_handler = TimedRotatingFileHandler(logname, when="midnight", interval=1)
 file_handler.suffix = "%Y%m%d"
@@ -27,14 +25,38 @@ logging.basicConfig(encoding='utf-8',
                       logging.StreamHandler(sys.stdout)
                     ]
 )
+logger = logging.getLogger()
 
 # Read config.yaml file
 logging.info("Reading configuration file!")
 with open("config.yaml", 'r') as stream:
     yamlData = yaml.safe_load(stream)
-    
+
+# parse loglevel if present
+try:  # make it backward compatible to older Versions
+    loglevel = yamlData["misc"]["loglevel"]
+    if loglevel == 0 or loglevel == 10 or loglevel == 20 or loglevel == 30 or loglevel == 40 or loglevel == 50:
+        # referring to https://docs.python.org/3/library/logging.html#logging-levels
+        logger.setLevel(loglevel)
+    else:
+        logger.error("Loglevel in configuration file wrong")
+except:
+    logger.error("loglevel in configuration not set")
+
+# parse dev_mode if present
+try:  # make it backward compatible to older Versions
+    dev_mode = yamlData["misc"]["dev_mode"]
+except:
+    dev_mode = False
+    logger.error("dev_mode in configuration not set, disabled by default")
+       
 serverUrl = yamlData["server"]["url"]
 boxId = yamlData["station"]["boxId"]
+sendTimeDeltaInMinutes = yamlData["station"]["sendTimeDeltaInMinutes"]
+
+logging.info('loglevel=' + str(loglevel))
+logging.info('dev_mode=' + str(dev_mode))
+logging.info('sendTimeDeltaInMinutes=' + str(sendTimeDeltaInMinutes))
 
 # Function to send environment data to the server
 def send_environment(filename, server_url, box_id):
@@ -97,9 +119,9 @@ def send_data():
 		send_movement(video, audio, data, serverUrl, boxId)
 	logging.info('Job done. Returning in one hour.')
 
-schedule.every(20).minutes.do(send_data)
+schedule.every(sendTimeDeltaInMinutes).minutes.do(send_data)
 
 schedule.run_all()
 while True:
 	schedule.run_pending()
-	time.sleep(60)
+	time.sleep(30)
