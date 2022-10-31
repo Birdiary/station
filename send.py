@@ -69,10 +69,8 @@ def send_environment(filename, server_url, box_id):
 	else:
 		try:
 			r = requests.post(server_url + 'environment/' + box_id, json=data, timeout=20)
-			logging.info('Following environment data send:')
-			logging.info(data)
-			logging.info('Corresponding environment_id:')
-			logging.info(r.content)
+			logging.info('Following environment data send: %s', data)
+			logging.debug('Corresponding environment_id: %s', r.content)
 		except (requests.ConnectionError, requests.Timeout) as exception:
 			logging.warning('No internet connection. ' + str(exception))
 		else:
@@ -95,10 +93,8 @@ def send_movement(video_filename, audio_filename, data_filename, server_url, box
 		try:
 			logging.debug(serverUrl + 'movement/' + box_id)
 			r = requests.post(serverUrl + 'movement/' + box_id, files=files, timeout=60)
-			logging.info('Following movement data send:')
-			logging.info(files)
-			logging.info('Corresponding movement_id:')
-			logging.info(r.content)
+			logging.info('Following movement data send: %s', files)
+			logging.debug('Corresponding movement_id: %s', r.content)
 		except (requests.ConnectionError, requests.Timeout) as exception:
 			logging.warning('No internet connection. ' + str(exception))
 		else:
