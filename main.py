@@ -253,7 +253,7 @@ def cleanAndExit():
   
 def terminate_recorder():
   global recorder
-  if recorder.is_alive():
+  if recorder is not None and recorder.is_alive():
     recorder.terminate()
     logging.info("terminated recorder")
   else:
