@@ -59,6 +59,7 @@ Zur Info: Eingaben im Terminal können getätigt werden, wenn die (grüne) Zeile
   - Gegebenenfalls im Terminal bestätigen durch die Eingabe von `j` und Enter. 
 - Eingabe im Terminal: `python3 -m pip install --user scipy`
 - Für die vorherigen drei Schritte ist eine detaillierte Anleitung unter folgendem Link zu finden: https://github.com/Infineon/i2s-microphone/wiki/Raspberry-Pi-Audio-Processing-with-Python 
+- Eingabe im Terminal: `pip3 install SoundFile`
 
 # Hardware anschließen 
 
