@@ -28,7 +28,7 @@ def callback(indata, frames, time, status):
         print(status, file=sys.stderr)
     q.put(indata.copy())
 
-def record(filename = '/home/pi/station/files/sound.wav', 
+def record(filename = '/home/pi/station/movements/sound.wav', 
            samplerate = 48000, 
            device = 'snd_rpi_i2s_card', 
            channels = 1, 

@@ -105,9 +105,9 @@ def send_movement(video_filename, audio_filename, data_filename, server_url, box
 def send_data():
 	logging.info('Starting job')
 	environmentFiles = sorted(glob.glob('environments/*.json'))
-	videoFiles = sorted(glob.glob('files/*.h264'))
-	audioFiles = sorted(glob.glob('files/*.wav'))
-	dataFiles = sorted(glob.glob('files/*.json'))	
+	videoFiles = sorted(glob.glob('movements/*.h264'))
+	audioFiles = sorted(glob.glob('movements/*.wav'))
+	dataFiles = sorted(glob.glob('movements/*.json'))	
 
 	for file in environmentFiles:
 		send_environment(file, serverUrl, boxId)

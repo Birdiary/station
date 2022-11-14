@@ -156,11 +156,11 @@ recorder = None
 
 def set_filenames(movementStartDate):
     global audio_filename
-    audio_filename = 'files/' + str(movementStartDate) + '.wav'
+    audio_filename = 'movements/' + str(movementStartDate) + '.wav'
     global video_filename
-    video_filename = 'files/' + str(movementStartDate) + '.h264'
+    video_filename = 'movements/' + str(movementStartDate) + '.h264'
     global data_filename
-    data_filename = 'files/' + str(movementStartDate) + '.json'
+    data_filename = 'movements/' + str(movementStartDate) + '.json'
 
 # Function to track a movement      
 def track_movement(): 
