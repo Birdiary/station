@@ -17,6 +17,7 @@ logname = "logs/send.log"
 file_handler = TimedRotatingFileHandler(logname, when="midnight", interval=1)
 file_handler.suffix = "%Y%m%d"
 
+""" # Block just works for Python version >= 3.9
 logging.basicConfig(encoding='utf-8', 
                     level=logging.DEBUG, 
                     format='%(asctime)s %(levelname)s: %(message)s',
@@ -24,8 +25,13 @@ logging.basicConfig(encoding='utf-8',
                       file_handler,
                       logging.StreamHandler(sys.stdout)
                     ]
-)
+) 
+"""
 logger = logging.getLogger()
+
+logger.setLevel(logging.DEBUG)
+logger.addHandler(file_handler)
+logger.addHandler(logging.StreamHandler(sys.stdout))
 
 # Read config.yaml file
 logging.info("Reading configuration file!")
