@@ -20,6 +20,8 @@ if not os.path.exists('logs'):
     os.makedirs('logs')
 if not os.path.exists('environments'):
     os.makedirs('environments')
+if not os.path.exists('movements'):
+    os.makedirs('movements')
 if not os.path.exists('temp'):
     os.makedirs('temp')
 
