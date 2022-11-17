@@ -24,6 +24,7 @@ while true; do
   done
   echo "Internet connection is working!"
   python3 main.py &
+  python3 send.py &
   ONLINE=1
   wait $!
 done
