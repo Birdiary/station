@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "Welcome to Birdiary!" 
 
-cd /home/pi/station
+cd ~/station
 
 ONLINE=1
 
