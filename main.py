@@ -77,6 +77,7 @@ environmentTimeDeltaInMinutes = yamlData["station"]["environmentTimeDeltaInMinut
 weightThreshold = yamlData["station"]["weightThreshold"] # weight which is the threshold to recognize a movement 
 terminal_weight = yamlData["station"]["terminal_weight"] # reference unit for the balance
 calibration_weight = yamlData["station"]["calibration_weight"] # reference unit for the balance
+camera_rotation =  yamlData["station"]["cameraRotation"]
 
 logging.info('loglevel=' + str(loglevel))
 logging.info('dev_mode=' + str(dev_mode))
@@ -89,7 +90,7 @@ import random
 import picamera
 
 camera = picamera.PiCamera()
-camera.rotation = 180
+camera.rotation = camera_rotation
 camera.resolution = (1280, 960)
 stream = picamera.PiCameraCircularIO(camera, seconds=5)
 camera.start_recording(stream, format='h264')
