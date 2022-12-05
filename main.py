@@ -9,6 +9,7 @@ import yaml
 import json
 import logging
 from logging.handlers import TimedRotatingFileHandler
+from send import * 
 
 dev_mode = False
 if not dev_mode:
@@ -22,6 +23,8 @@ if not os.path.exists('environments'):
     os.makedirs('environments')
 if not os.path.exists('movements'):
     os.makedirs('movements')
+if not os.path.exists('savedMovements'):
+    os.makedirs('savedMovements')
 if not os.path.exists('temp'):
     os.makedirs('temp')
 
@@ -78,6 +81,7 @@ weightThreshold = yamlData["station"]["weightThreshold"] # weight which is the t
 terminal_weight = yamlData["station"]["terminal_weight"] # reference unit for the balance
 calibration_weight = yamlData["station"]["calibration_weight"] # reference unit for the balance
 camera_rotation =  yamlData["station"]["cameraRotation"]
+weightResetInMinutes = yamlData["station"]["weightResetInMinutes"]
 
 logging.info('loglevel=' + str(loglevel))
 logging.info('dev_mode=' + str(dev_mode))
@@ -137,9 +141,51 @@ def write_environment(environment_data):
     with open(filename, 'w') as wfile:
         json.dump(environment_data, wfile)
 
+def write_movement(movement_data):
+    with open(data_filename, 'w') as jsonfile:
+        jsonfile.write(movement_data)
+
+# Function to send movement data to the server
+def send_realtime_movement(files):
+        
+    if dev_mode:
+        logging.warning('send_movement deactivated')
+        logging.warning('received: ' + str(video_filename) + ' ' + str(audio_filename) + ' ' + str(data_filename))
+    else:
+        try:
+            logging.debug(serverUrl + 'movement/' + boxId)
+            r = requests.post(serverUrl + 'movement/' + boxId, files=files, timeout=60)
+            logging.info('Following movement data send: %s', files)
+            logging.debug('Corresponding movement_id: %s', r.content)
+        except (requests.ConnectionError, requests.Timeout) as exception:
+            logging.warning('No internet connection. ' + str(exception))
+            logging.warning('Saving files to send later')
+            shutil.move(audio_filename, save_audio_filename)
+            shutil.move(video_filename, save_video_filename)
+            write_movement(files['json'][1])
+        else:
+            os.remove(video_filename)
+            os.remove(audio_filename)
+
+def send_realtime_environment(environmentData):
+    if dev_mode:
+        logging.warning('send_environment deactivated')
+        logging.warning('received: ' + str(environmentData))
+    else:
+        try:
+            r = requests.post(serverUrl + 'environment/' + boxId, json=environmentData, timeout=20)
+            logging.info('Following environment data send: %s', environmentData)
+            logging.debug('Corresponding environment_id: %s', r.content)
+        except (requests.ConnectionError, requests.Timeout) as exception:
+            logging.warning('No internet connection. ' + str(exception))
+            logging.warning("Saving environment data to send later")
+            write_environment(environmentData)
+        else:
+            send_data()            
+
 # Function to track a environment  
 def track_environment(): 
-   try:
+    try:
       logging.info("Collect Environment Data") 
       environment = {}
       environment["date"] = str(datetime.now())
@@ -149,28 +195,42 @@ def track_environment():
       logging.info("Environment Data: ")
       logging.info(environment)
                   
-      write_environment(environment)
+      send_realtime_environment(environment)
       
       global environmentData 
       environmentData = environment 
-   except Exception as e:
+    except Exception as e:
       logging.error(e)  
 
 # predefined variables 
 environmentData = None
 audio_filename = None
 video_filename = None
+save_audio_filename = None
+save_video_filename = None
 temp_audio_filename = 'temp/audio.wav'
 data_filename = None
 recorder = None
 
+def tare():
+    weight2 = hx.get_weight()
+    if(weight2<weightThreshold):
+        logging.info("Setting weight to zero. Measured weight:" + str(weight2))
+        hx.tare()
+
+
+
 def set_filenames(movementStartDate):
+    global save_audio_filename
+    save_audio_filename = 'savedMovements/' + str(movementStartDate) + '.wav'
+    global save_video_filename
+    save_video_filename = 'savedMovements/' + str(movementStartDate) + '.h264'
     global audio_filename
     audio_filename = 'movements/' + str(movementStartDate) + '.wav'
     global video_filename
     video_filename = 'movements/' + str(movementStartDate) + '.h264'
     global data_filename
-    data_filename = 'movements/' + str(movementStartDate) + '.json'
+    data_filename = 'savedMovements/' + str(movementStartDate) + '.json'
 
 # Function to track a movement      
 def track_movement(): 
@@ -178,6 +238,7 @@ def track_movement():
    
    # schedule an environment track for every x minutes    
    schedule.every(environmentTimeDeltaInMinutes).minutes.do(track_environment)
+   schedule.every(weightResetInMinutes).minuts.do(tare)
 
    while True:
        try:
@@ -248,10 +309,11 @@ def track_movement():
                  
                  files["json"] = (None, json.dumps(movementData), 'application/json')
 
-                 with open(data_filename, 'w') as jsonfile:
-                    jsonfile.write(files['json'][1])
+                 send_realtime_movement(files, boxId)
                  
                  values = []
+                 tare()
+
                  
        except (KeyboardInterrupt, SystemExit):
            cleanAndExit()

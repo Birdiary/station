@@ -10,7 +10,6 @@ import logging
 import sys
 import os
 from logging.handlers import TimedRotatingFileHandler
-import schedule
 import time
 
 logname = "logs/send.log"
@@ -111,9 +110,9 @@ def send_movement(video_filename, audio_filename, data_filename, server_url, box
 def send_data():
 	logging.info('Starting job')
 	environmentFiles = sorted(glob.glob('environments/*.json'))
-	videoFiles = sorted(glob.glob('movements/*.h264'))
-	audioFiles = sorted(glob.glob('movements/*.wav'))
-	dataFiles = sorted(glob.glob('movements/*.json'))	
+	videoFiles = sorted(glob.glob('savedMovements/*.h264'))
+	audioFiles = sorted(glob.glob('savedMovements/*.wav'))
+	dataFiles = sorted(glob.glob('savedMovements/*.json'))	
 
 	for file in environmentFiles:
 		send_environment(file, serverUrl, boxId)
@@ -121,9 +120,3 @@ def send_data():
 		send_movement(video, audio, data, serverUrl, boxId)
 	logging.info('Job done. Returning in one hour.')
 
-schedule.every(sendTimeDeltaInMinutes).minutes.do(send_data)
-
-schedule.run_all()
-while True:
-	schedule.run_pending()
-	time.sleep(30)
