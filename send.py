@@ -6,15 +6,11 @@ import requests
 import glob
 import yaml
 import json
-import logging
 import sys
 import os
-from logging.handlers import TimedRotatingFileHandler
+
 import time
 
-logname = "logs/send.log"
-file_handler = TimedRotatingFileHandler(logname, when="midnight", interval=1)
-file_handler.suffix = "%Y%m%d"
 
 """ # Block just works for Python version >= 3.9
 logging.basicConfig(encoding='utf-8', 
@@ -26,42 +22,14 @@ logging.basicConfig(encoding='utf-8',
                     ]
 ) 
 """
-logger = logging.getLogger()
-
-logger.setLevel(logging.DEBUG)
-logger.addHandler(file_handler)
-logger.addHandler(logging.StreamHandler(sys.stdout))
-
 # Read config.yaml file
 logging.info("Reading configuration file!")
 with open("config.yaml", 'r') as stream:
     yamlData = yaml.safe_load(stream)
 
-# parse loglevel if present
-try:  # make it backward compatible to older Versions
-    loglevel = yamlData["misc"]["loglevel"]
-    if loglevel == 0 or loglevel == 10 or loglevel == 20 or loglevel == 30 or loglevel == 40 or loglevel == 50:
-        # referring to https://docs.python.org/3/library/logging.html#logging-levels
-        logger.setLevel(loglevel)
-    else:
-        logger.error("Loglevel in configuration file wrong")
-except:
-    logger.error("loglevel in configuration not set")
 
-# parse dev_mode if present
-try:  # make it backward compatible to older Versions
-    dev_mode = yamlData["misc"]["dev_mode"]
-except:
-    dev_mode = False
-    logger.error("dev_mode in configuration not set, disabled by default")
-       
-serverUrl = yamlData["server"]["url"]
-boxId = yamlData["station"]["boxId"]
-sendTimeDeltaInMinutes = yamlData["station"]["sendTimeDeltaInMinutes"]
 
-logging.info('loglevel=' + str(loglevel))
-logging.info('dev_mode=' + str(dev_mode))
-logging.info('sendTimeDeltaInMinutes=' + str(sendTimeDeltaInMinutes))
+
 
 # Function to send environment data to the server
 def send_environment(filename, server_url, box_id):
