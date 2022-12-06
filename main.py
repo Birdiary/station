@@ -237,7 +237,9 @@ def set_filenames(movementStartDate):
 
 # Function to track a movement      
 def track_movement(): 
-   values = [] 
+   values = []
+   hx.reset()
+   hx.tare()
    
    # schedule an environment track for every x minutes    
    schedule.every(environmentTimeDeltaInMinutes).minutes.do(track_environment)
@@ -324,7 +326,7 @@ def track_movement():
 def cleanAndExit():
   camera.close()
   terminate_recorder()
-  sys.exit(0)
+  sys.exit(2)
   
 def terminate_recorder():
   global recorder
@@ -379,7 +381,7 @@ def send_movement(video_filename, audio_filename, data_filename, server_url, box
 			os.remove(data_filename)
 
 def send_data():
-	logging.info('Starting job')
+	logging.info('Sending stored data')
 	environmentFiles = sorted(glob.glob('environments/*.json'))
 	videoFiles = sorted(glob.glob('savedMovements/*.h264'))
 	audioFiles = sorted(glob.glob('savedMovements/*.wav'))
@@ -389,7 +391,7 @@ def send_data():
 		send_environment(file, serverUrl, boxId)
 	for (video, audio, data) in zip(videoFiles, audioFiles, dataFiles):
 		send_movement(video, audio, data, serverUrl, boxId)
-	logging.info('Job done. Returning in one hour.')
+	logging.info('All stored data send!')
         
 logging.info("Start Birdiary!")
 track_movement() 
