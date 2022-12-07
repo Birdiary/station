@@ -130,6 +130,7 @@ if calibration_weight != 0:
 
 hx.power_up()
 hx.reset()
+time.sleep(30)
 hx.tare()
 
 # Setup Microphone 
@@ -216,10 +217,15 @@ data_filename = None
 recorder = None
 
 def tare():
-    weight2 = hx.get_weight()
+    weight2 = hx.get_weight(15)
     if(weight2<weightThreshold):
-        logging.info("Setting weight to zero. Measured weight:" + str(weight2))
-        hx.tare()
+        while((weight2 < -0.5 or weight2>0.5)):
+            logging.info("Measured weight:" + str(weight2) + " not in valid range. Start taring")
+            hx.tare()
+            time.sleep(5)
+            weight2 = hx.get_weight(15)
+    logging.info("Measured weight:" + str(weight2) + " in valid range. Stop taring")
+            
 
 
 
@@ -238,18 +244,21 @@ def set_filenames(movementStartDate):
 # Function to track a movement      
 def track_movement(): 
    values = []
-   hx.reset()
-   hx.tare()
+
+   
+
    
    # schedule an environment track for every x minutes    
    schedule.every(environmentTimeDeltaInMinutes).minutes.do(track_environment)
    schedule.every(weightResetInMinutes).minutes.do(tare)
 
+
+
    while True:
        try:
            schedule.run_pending()
            
-           weight = hx.get_weight(17)  
+           weight = hx.get_weight(15)  
            
            if (weight < weightThreshold  and len(values) == 0):
               logging.info("Waiting for movement! (currently measured weight: " + str(weight) + ")")
@@ -317,7 +326,6 @@ def track_movement():
                  send_realtime_movement(files)
                  
                  values = []
-                 tare()
 
                  
        except (KeyboardInterrupt, SystemExit):
