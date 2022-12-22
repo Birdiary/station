@@ -94,7 +94,8 @@ Die Belegung und Nummerierung der Pins / Ports des Raspberry Pi kann unter ander
 - GND -> Port 20 (GND)
 - 3V  -> Port 17 (3,3 V)
 
-# Setup Birdiary 
+# Setup Birdiary
+(Je nachdem mit welchen Benutzer man sich am RaspberryPi anmeldet, können die Verzeichnisse abweichen. Solltest du dich nicht mit dem Benutzer 'pi' anmelden, musst du den Verzeichnisnamen gegen Deinen austauschen. Aus /home/pi wird dann /home/<dein Benutzer>)
 - Eingabe im Terminal: `cd /home/pi/`
 - Eingabe im Terminal: `git clone https://github.com/CountYourBirds/station.git` 
 - Erstelle unter https://wiediversistmeingarten.org/react/createbox deine eigene Station
@@ -140,7 +141,7 @@ Die Belegung und Nummerierung der Pins / Ports des Raspberry Pi kann unter ander
 Encoding=UTF-8
 Name=Terminal autostart
 Comment=Start a terminal and list directory
-Exec=/usr/bin/lxterm -e 'bash /home/pi/station/startup.sh'
+Exec=/usr/bin/lxterm -e 'bash ~/station/startup.sh'
 ```
 - `Strg`+ `O` 
 - `Enter`
