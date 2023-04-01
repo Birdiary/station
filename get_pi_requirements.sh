@@ -50,6 +50,11 @@ yes | sudo apt-get install xterm
 mkdir -p ~/.config/autostart
 cp ~/station/lxterm-autostart.desktop ~/.config/autostart
 
+
+# activate the HDMI output, even if no monitor is detected
+sudo sed -i '3ahdmi_force_hotplug=1' /boot/config.txt
+sudo sed -i '4ahdmi_mode=16' /boot/config.txt
+
 printf "\033[0;35m####### config interfaces -> enable camera and i2c #######\033[0m\n"
 # config interfaces -> enable camera and i2c
 sudo raspi-config nonint do_camera 0

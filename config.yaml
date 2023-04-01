@@ -1,12 +1,13 @@
 server:
   url: https://wiediversistmeingarten.org/api/
 station: 
-  boxId: 4a936912-65db-475d-bcd6-9ee292079830
+  boxId: "999"
   environmentTimeDeltaInMinutes: 2 
   weightThreshold: 5 
-  calibration_weight: 0
-  terminal_weight: 0
-  sendTimeDeltaInMinutes: 20
+  calibration_weight: 0 
+  terminal_weight: 0 
+  cameraRotation: 180
+  weightResetInMinutes: 20
 misc:
   loglevel: 20 # loglevel can be either 0-NOTSET, 10-DEBUG, 20-INFO, 30-WARNING, 40-ERROR, 50-CRITICAL
   dev_mode: No # Yes - for testing, nothing is send to the server, No - normal usage, sync to server is enabled
