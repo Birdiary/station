@@ -2,4 +2,6 @@
 Encoding=UTF-8
 Name=Terminal autostart
 Comment=Start birdiary on boot in terminal on desktop
-Exec=/usr/bin/lxterm -e 'bash /home/pi/station/startup.sh & bash /home/pi/station/internetTest.sh '
+
+Exec=/usr/bin/lxterm -e 'bash ~/station/startup.sh & bash ~/station/internetTest.sh '
+
