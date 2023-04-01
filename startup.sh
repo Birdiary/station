@@ -2,7 +2,7 @@
 echo "Welcome to Birdiary!" 
 
 
-cd ~/pi/station
+cd ~/station
 until python3 main.py
 do
     echo "Restarting"
