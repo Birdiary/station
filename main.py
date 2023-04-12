@@ -26,6 +26,10 @@ if not os.path.exists('environments'):
     os.makedirs('environments')
 if not os.path.exists('movements'):
     os.makedirs('movements')
+else: 
+    files = glob.glob('movements/*')
+    for f in files:
+        os.remove(f)
 if not os.path.exists('savedMovements'):
     os.makedirs('savedMovements')
 if not os.path.exists('temp'):
@@ -346,8 +350,11 @@ def terminate_recorder():
     
 #Function to send environment data to the server
 def send_environment(filename, server_url, box_id):
-	with open(filename, 'r') as envFile:
-		data = json.load(envFile)
+	try:
+		with open(filename, 'r') as envFile:
+			data = json.load(envFile)
+	except:
+		os.remove(filename)
 		
 	if dev_mode:
 		logging.warning('send_environment deactivated')
@@ -364,9 +371,14 @@ def send_environment(filename, server_url, box_id):
 			
 # Function to send movement data to the server
 def send_movement(video_filename, audio_filename, data_filename, server_url, box_id):
-	with open(data_filename, 'r') as dataFile:
-		data = json.load(dataFile)
-	
+	try: 
+		with open(data_filename, 'r') as dataFile:
+			data = json.load(dataFile)
+	except:
+		os.remove(video_filename)
+		os.remove(audio_filename)
+		os.remove(data_filename)
+		
 	files = {}
 	files['videoKey'] = (os.path.basename(video_filename), open(video_filename, 'rb'))
 	files['audioKey'] = (os.path.basename(audio_filename), open(audio_filename, 'rb'))
