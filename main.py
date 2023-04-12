@@ -374,15 +374,16 @@ def send_movement(video_filename, audio_filename, data_filename, server_url, box
 	try: 
 		with open(data_filename, 'r') as dataFile:
 			data = json.load(dataFile)
+		files = {}
+		files['videoKey'] = (os.path.basename(video_filename), open(video_filename, 'rb'))
+		files['audioKey'] = (os.path.basename(audio_filename), open(audio_filename, 'rb'))
+		files['json'] = (None, json.dumps(data), 'application/json')
 	except:
 		os.remove(video_filename)
 		os.remove(audio_filename)
 		os.remove(data_filename)
 		
-	files = {}
-	files['videoKey'] = (os.path.basename(video_filename), open(video_filename, 'rb'))
-	files['audioKey'] = (os.path.basename(audio_filename), open(audio_filename, 'rb'))
-	files['json'] = (None, json.dumps(data), 'application/json')
+
 		
 	if dev_mode:
 		logging.warning('send_movement deactivated')
