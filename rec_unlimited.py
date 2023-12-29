@@ -4,6 +4,7 @@
 The soundfile module (https://PySoundFile.readthedocs.io/) has to be installed!
 
 """
+import os
 import tempfile
 import queue
 import sys
@@ -11,7 +12,9 @@ import sys
 import sounddevice as sd
 import soundfile as sf
 import numpy  # Make sure NumPy is loaded before it is used in the callback
+
 assert numpy  # avoid "imported but unused" message (W0611)
+
 
 def int_or_str(text):
     """Helper function for argument parsing."""
@@ -20,7 +23,9 @@ def int_or_str(text):
     except ValueError:
         return text
 
+
 q = queue.Queue()
+
 
 def callback(indata, frames, time, status):
     """This is called (from a separate thread) for each audio block."""
@@ -33,7 +38,7 @@ def record(filename=(os.environ['HOME'] + '/station/movements/sound.wav'),
            samplerate=48000,
            device='snd_rpi_i2s_card',
            channels=1,
-           subtype='PCM_16'):
+           subtype=None):
     print('Starting to record to ' + filename)
     try:
         if samplerate is None:
@@ -46,7 +51,6 @@ def record(filename=(os.environ['HOME'] + '/station/movements/sound.wav'),
                           channels=channels, subtype=subtype) as file:
             with sd.InputStream(samplerate=samplerate, device=device,
                                 channels=channels, callback=callback):
-
                 while True:
                     file.write(q.get())
 
