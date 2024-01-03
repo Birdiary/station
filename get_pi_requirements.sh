@@ -49,6 +49,8 @@ printf "\033[0;35m####### Set Autostart #######\033[0m\n"
 yes | sudo apt-get install xterm
 mkdir -p ~/.config/autostart
 cp ~/station/lxterm-autostart.desktop ~/.config/autostart
+sed -i 's,~/station,'"$HOME"'/station,g' birdiary.desktop
+cp ~/station/birdiary.desktop ~/Desktop
 printf "\033[0;35m####### config interfaces -> enable camera and i2c #######\033[0m\n"
 # config interfaces -> enable camera and i2c
 sudo raspi-config nonint do_camera 0
