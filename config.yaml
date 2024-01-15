@@ -8,6 +8,19 @@ station:
   terminal_weight: 0 
   cameraRotation: 180
   weightResetInMinutes: 20
+data-receiver:
+  mqtt:
+     # set to true(1)/false(0) to activate or deactivate the server
+     active: false
+     broker: 0.0.0.0
+     # usually 1883
+     brokerPort : 1883
+     # username for the broker
+     username :
+     # password must be in clear Text
+     password :
+     # register to Home Assistant
+     discoverHASS: 1
 misc:
   loglevel: 20 # loglevel can be either 0-NOTSET, 10-DEBUG, 20-INFO, 30-WARNING, 40-ERROR, 50-CRITICAL
   dev_mode: No # Yes - for testing, nothing is send to the server, No - normal usage, sync to server is enabled
