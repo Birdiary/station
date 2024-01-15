@@ -8,6 +8,8 @@ station:
   terminal_weight: 0 
   cameraRotation: 180
   weightResetInMinutes: 20
+  #audio_gain is to lift the volume of the microphone.To high values generate white noice, to low doesn't change anything
+  audio_gain: +20
 misc:
   loglevel: 20 # loglevel can be either 0-NOTSET, 10-DEBUG, 20-INFO, 30-WARNING, 40-ERROR, 50-CRITICAL
   dev_mode: No # Yes - for testing, nothing is send to the server, No - normal usage, sync to server is enabled

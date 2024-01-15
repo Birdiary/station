@@ -34,7 +34,8 @@ if not os.path.exists('savedMovements'):
     os.makedirs('savedMovements')
 if not os.path.exists('temp'):
     os.makedirs('temp')
-
+if os.path.exists('temp/audio.raw'):
+    os.remove('temp/audio.raw')
 logname = "logs/birdiary.log"
 file_handler = TimedRotatingFileHandler(logname, when="midnight", interval=1)
 file_handler.suffix = "%Y%m%d"
@@ -141,7 +142,8 @@ hx.tare()
 logging.info("Setup microphone!")
 from rec_unlimited import record
 from multiprocessing import Process
-
+from pydub import AudioSegment  # for converting the raw to mp3
+audio_gain = yamlData["station"]["audio_gain"]
 logging.info("Setup finished!") 
  
 def write_environment(environment_data):
@@ -216,7 +218,7 @@ audio_filename = None
 video_filename = None
 save_audio_filename = None
 save_video_filename = None
-temp_audio_filename = 'temp/audio.wav'
+temp_audio_filename = 'temp/audio.raw'  # the filename extension has to be .raw to convert it later to mp3
 data_filename = None
 recorder = None
 
@@ -239,7 +241,7 @@ def set_filenames(movementStartDate):
     global save_video_filename
     save_video_filename = 'savedMovements/' + str(movementStartDate) + '.h264'
     global audio_filename
-    audio_filename = 'movements/' + str(movementStartDate) + '.wav'
+    audio_filename = 'movements/' + str(movementStartDate) + '.mp3'
     global video_filename
     video_filename = 'movements/' + str(movementStartDate) + '.h264'
     global data_filename
@@ -311,7 +313,15 @@ def track_movement():
                  
                  # stop audio recording and move temporary file to output directory 
                  terminate_recorder()
-                 shutil.move(temp_audio_filename, audio_filename)
+                 tags_json = dict(title=(movementStartDate.strftime("%Y-%M-%d %H:%m:%S") + '_' + boxId),
+                                  track=1, artist=boxId,
+                                  copyright='www.wiediversistmeingarten.org',
+                                  genre="Noise", date=movementStartDate.strftime("%Y-%M-%d"))
+                 RawAudio = AudioSegment.from_raw(temp_audio_filename, sample_width=2, frame_rate=48000, channels=1)
+                 RawAudioVolumeLifted = RawAudio.apply_gain(audio_gain)  # lift up the volume
+                 RawAudioVolumeLifted.export(audio_filename, format='mp3', tags=tags_json, id3v2_version="3")
+                 os.remove(temp_audio_filename)
+                 # shutil.move(temp_audio_filename, audio_filename)
                  
                  files['audioKey'] = (os.path.basename(audio_filename), open(audio_filename, 'rb'))
                  files['videoKey'] = (os.path.basename(video_filename), open(video_filename, 'rb'))
