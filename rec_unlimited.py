@@ -5,6 +5,7 @@ The soundfile module (https://PySoundFile.readthedocs.io/) has to be installed!
 
 """
 import os
+import parser
 import tempfile
 import queue
 import sys
