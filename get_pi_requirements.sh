@@ -49,7 +49,11 @@ printf "\033[0;35m####### Set Autostart #######\033[0m\n"
 yes | sudo apt-get install xterm
 mkdir -p ~/.config/autostart
 cp ~/station/lxterm-autostart.desktop ~/.config/autostart
-
+#Desktop Starter
+##change ~/station to absolute Path, because ~ is not working for Starter.
+sed -i "s|~/station|$HOME/station|g" birdiary.desktop
+## copy modified starter to Desktop
+cp ~/station/birdiary.desktop ~/Desktop
 
 # activate the HDMI output, even if no monitor is detected
 sudo sed -i '3ahdmi_force_hotplug=1' /boot/config.txt
