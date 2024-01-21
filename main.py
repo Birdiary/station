@@ -1,10 +1,14 @@
 import sys
 import shutil
 import time
+from typing import Union
+
 import schedule
 import numpy as np
-from datetime import datetime, timedelta 
-import os 
+from datetime import datetime, timedelta
+from tzlocal import get_localzone
+import pytz
+import os
 import yaml
 import json
 import logging
@@ -12,7 +16,13 @@ from logging.handlers import TimedRotatingFileHandler
 import glob
 import requests
 
-
+# set some mqtt initial Variables
+mqtt_active: bool = False
+mqtt_broker: str = ''
+mqtt_brokerPort: int = 1883
+mqtt_username: str = ''
+mqtt_password: str = ''
+mqtt_discoverHASS: bool = False
 
 dev_mode = False
 if not dev_mode:
@@ -26,7 +36,7 @@ if not os.path.exists('environments'):
     os.makedirs('environments')
 if not os.path.exists('movements'):
     os.makedirs('movements')
-else: 
+else:
     files = glob.glob('movements/*')
     for f in files:
         os.remove(f)
@@ -51,18 +61,18 @@ logging.basicConfig(encoding='utf-8',
 """
 logger = logging.getLogger()
 
-logger.setLevel(logging.DEBUG)  
+logger.setLevel(logging.DEBUG)
 logger.addHandler(file_handler)
 logger.addHandler(logging.StreamHandler(sys.stdout))
 
 
-logging.info("Start setup!") 
+logging.info("Start setup!")
 
 # Read config.yaml file
 logging.info("Reading configuration file!")
 with open("config.yaml", 'r') as stream:
     yamlData = yaml.safe_load(stream)
-    
+
 # parse loglevel if present
 try:  # make it backward compatible to older Versions
     loglevel = yamlData["misc"]["loglevel"]
@@ -83,12 +93,30 @@ except:
 
 serverUrl = yamlData["server"]["url"]
 boxId = yamlData["station"]["boxId"]
-environmentTimeDeltaInMinutes = yamlData["station"]["environmentTimeDeltaInMinutes"] # waiting time to send environment requests 
-weightThreshold = yamlData["station"]["weightThreshold"] # weight which is the threshold to recognize a movement 
+environmentTimeDeltaInMinutes = yamlData["station"]["environmentTimeDeltaInMinutes"] # waiting time to send environment requests
+weightThreshold = yamlData["station"]["weightThreshold"] # weight which is the threshold to recognize a movement
 terminal_weight = yamlData["station"]["terminal_weight"] # reference unit for the balance
 calibration_weight = yamlData["station"]["calibration_weight"] # reference unit for the balance
 camera_rotation =  yamlData["station"]["cameraRotation"]
 weightResetInMinutes = yamlData["station"]["weightResetInMinutes"]
+
+logger.debug('Configfile data: serverUrl: %s; boxId: %s; environmentTimeDeltaInMinutes: \
+            %s; weightThreshold: %s; terminal_weight: %s ;calibration_weight: %s'
+             % (serverUrl, boxId, environmentTimeDeltaInMinutes, weightThreshold, terminal_weight, calibration_weight))
+
+if yamlData["data-receiver"]["mqtt"]["active"] and yamlData["data-receiver"]["mqtt"]["active"] == True:
+    import MQTT
+    mqtt_broker = yamlData["data-receiver"]["mqtt"]["broker"]
+    mqtt_brokerPort = yamlData["data-receiver"]["mqtt"]["brokerPort"]
+    mqtt_username = yamlData["data-receiver"]["mqtt"]["username"]
+    mqtt_password = yamlData["data-receiver"]["mqtt"]["password"]
+    mqtt_discoverHASS = yamlData["data-receiver"]["mqtt"]["discoverHASS"]
+    mqtt_active = yamlData["data-receiver"]["mqtt"]["active"]
+    logger.debug(
+        'MQTT Parameters brokerip: %s; brokerPort: %s;username: %s;password: <secret>;discoverHASS: %s,Active %s'
+        % (mqtt_broker, mqtt_brokerPort, mqtt_username, mqtt_discoverHASS, mqtt_active))
+else:
+    logging.info("No MQTT configuration active")
 
 logging.info('loglevel=' + str(loglevel))
 logging.info('dev_mode=' + str(dev_mode))
@@ -110,7 +138,7 @@ camera.start_recording(stream, format='h264')
 logging.info("Setup DHT22!")
 import adafruit_dht
 from board import *
-SENSOR_PIN = D16 # use not board but GPIO number 
+SENSOR_PIN = D16 # use not board but GPIO number
 dht22 = adafruit_dht.DHT22(SENSOR_PIN, use_pulseio=False)
 
 # Setup Balance
@@ -142,8 +170,32 @@ logging.info("Setup microphone!")
 from rec_unlimited import record
 from multiprocessing import Process
 
-logging.info("Setup finished!") 
- 
+# Setup Mqtt Broker
+logger.info("Setup MQTT!")
+
+if mqtt_active:
+    mqtt_timeout = 0
+    logger.debug("mqtt is marked as active")
+    bvmqtt = MQTT.SendMQTT(mqtt_broker, mqtt_username, mqtt_password, mqtt_brokerPort)
+    bvmqtt.start()
+    while False == bvmqtt.connection_alive and mqtt_timeout <= 10:
+        logger.debug("Waiting for connection to MQTT-Broker. Attempt:%s" % mqtt_timeout)
+        time.sleep(1)
+        mqtt_timeout += 1
+    else:
+        if bvmqtt.connection_alive:
+            logger.info("Connection to broker successful")
+        elif mqtt_timeout > 10:
+            logger.warning('Connection to broker not possible. Timed-out')
+    if mqtt_discoverHASS == 1 and bvmqtt.connection_alive:
+        logger.debug('HomeAssistant discovers is active')
+        bvmqtt.discover_HASS(boxId)
+        logger.debug('Home Assistant discovery send')
+else:
+    logger.debug('MQTT is not active')
+
+logging.info("Setup finished!")
+
 def write_environment(environment_data):
     filename = 'environments/' + environment_data['date'] + '.json'
     with open(filename, 'w') as wfile:
@@ -153,9 +205,10 @@ def write_movement(movement_data):
     with open(data_filename, 'w') as jsonfile:
         jsonfile.write(movement_data)
 
+
 # Function to send movement data to the server
 def send_realtime_movement(files):
-        
+
     if dev_mode:
         logging.warning('send_movement deactivated')
         logging.warning('received: ' + str(video_filename) + ' ' + str(audio_filename) + ' ' + str(data_filename))
@@ -165,17 +218,47 @@ def send_realtime_movement(files):
             r = requests.post(serverUrl + 'movement/' + boxId, files=files, timeout=60)
             logging.info('Following movement data send: %s', files)
             logging.debug('Corresponding movement_id: %s', r.content)
+            return json.loads(r.content.decode())
         except (requests.ConnectionError, requests.Timeout) as exception:
             logging.warning('No internet connection. ' + str(exception))
             logging.warning('Saving files to send later')
             shutil.move(audio_filename, save_audio_filename)
             shutil.move(video_filename, save_video_filename)
             write_movement(files['json'][1])
+            return ""
         else:
             os.remove(video_filename)
             os.remove(audio_filename)
 
-def send_realtime_environment(environmentData):
+
+def send_movement_mqtt(box_id, movement_data=None):
+    if movement_data is None:
+        data = {}
+    logger.debug('Enter function send_movement_mqtt()')
+    if mqtt_active:
+        data: dict = movement_data
+        data["station_id"] = box_id
+        local_timezone = pytz.timezone(str(get_localzone()))
+
+        # convert start_date and add timezone
+        start_date_iso: datetime = datetime.strptime(data["start_date"], "%Y-%m-%d %H:%M:%S.%f")
+        start_date_iso: datetime = local_timezone.localize(start_date_iso).isoformat()
+        print(start_date_iso)
+        # convert end_date and add timezone
+        end_date_iso: datetime = datetime.strptime(data["end_date"], "%Y-%m-%d %H:%M:%S.%f")
+        end_date_iso: datetime = local_timezone.localize(end_date_iso).isoformat()
+        data["start_date"] = start_date_iso
+        data["end_date"] = end_date_iso
+        # calculate movement duration
+        start_date = datetime.fromisoformat(start_date_iso)
+        end_date = datetime.fromisoformat(end_date_iso)
+        time_difference = end_date - start_date
+        data["duration"] = time_difference.total_seconds()
+
+        # send Data
+        bvmqtt.sendData(f"birdiary/{box_id}/movement", json.dumps(data))
+
+def send_realtime_environment(environmentData:dict,box_id):
     if dev_mode:
         logging.warning('send_environment deactivated')
         logging.warning('received: ' + str(environmentData))
@@ -184,33 +267,35 @@ def send_realtime_environment(environmentData):
             r = requests.post(serverUrl + 'environment/' + boxId, json=environmentData, timeout=20)
             logging.info('Following environment data send: %s', environmentData)
             logging.debug('Corresponding environment_id: %s', r.content)
+            if mqtt_active:
+                bvmqtt.sendData("birdiary/" + str(box_id) + "/environment", json.dumps(environmentData))
         except (requests.ConnectionError, requests.Timeout) as exception:
             logging.warning('No internet connection. ' + str(exception))
             logging.warning("Saving environment data to send later")
             write_environment(environmentData)
         else:
-            send_data()            
+            send_data()
 
-# Function to track a environment  
-def track_environment(): 
+# Function to track a environment
+def track_environment():
     try:
-      logging.info("Collect Environment Data") 
-      environment = {}
-      environment["date"] = str(datetime.now())
-      environment["temperature"] = dht22.temperature
-      environment["humidity"] = dht22.humidity
-      
-      logging.info("Environment Data: ")
-      logging.info(environment)
-                  
-      send_realtime_environment(environment)
-      
-      global environmentData 
-      environmentData = environment 
-    except Exception as e:
-      logging.error(e)  
+        logging.info("Collect Environment Data")
+        environment = {}
+        environment["date"] = str(datetime.now())
+        environment["temperature"] = dht22.temperature
+        environment["humidity"] = dht22.humidity
 
-# predefined variables 
+        logging.info("Environment Data: ")
+        logging.info(environment)
+
+        send_realtime_environment(environment, boxId)
+
+        global environmentData
+        environmentData = environment
+    except Exception as e:
+        logging.error(e)
+
+# predefined variables
 environmentData = None
 audio_filename = None
 video_filename = None
@@ -229,7 +314,7 @@ def tare():
             time.sleep(5)
             weight2 = hx.get_weight(15)
     logging.info("Measured weight:" + str(weight2) + " in valid range. Stop taring")
-            
+
 
 
 
@@ -245,101 +330,104 @@ def set_filenames(movementStartDate):
     global data_filename
     data_filename = 'savedMovements/' + str(movementStartDate) + '.json'
 
-# Function to track a movement      
-def track_movement(): 
-   values = []
+# Function to track a movement
+def track_movement():
+    values = []
 
-   
+    # schedule an environment track for every x minutes
+    schedule.every(environmentTimeDeltaInMinutes).minutes.do(track_environment)
+    schedule.every(weightResetInMinutes).minutes.do(tare)
+    schedule.every(15).minutes.do(lambda: bvmqtt.discover_HASS(boxId))
 
-   
-   # schedule an environment track for every x minutes    
-   schedule.every(environmentTimeDeltaInMinutes).minutes.do(track_environment)
-   schedule.every(weightResetInMinutes).minutes.do(tare)
+    while True:
+        try:
+            schedule.run_pending()
+
+            weight = hx.get_weight(15)
+
+            if (weight < weightThreshold  and len(values) == 0):
+                logging.info("Waiting for movement! (currently measured weight: " + str(weight) + ")")
+
+            # start movement if weight higher than threshold is recognized
+            if (weight > weightThreshold and len(values) == 0):
+                logging.info("Movement recognized!")
+                movementStartDate = datetime.now()
+                set_filenames(movementStartDate)
+
+                global recorder
+                recorder = Process(target=record, args=(temp_audio_filename,))
+                recorder.start()
+
+                camera.wait_recording(1) # continue camera recording
+
+                values.append(weight) # add current weight to weight list
+
+            else:
+                # continue movement if currently recognized weight is above threshold
+                if (weight > weightThreshold):
+                    values.append(weight)
+                    camera.wait_recording(1)
+
+                    logging.info("Currently measured weight: " + str(weight))
+
+            hx.reset()
+
+            # stop movement if weight is below threshold
+            if (weight < weightThreshold):
+                if (len(values) >= 1):
+                    logging.info("Movement ending!")
+                    movementEndDate = datetime.now()
+
+                    duration = (movementEndDate - movementStartDate).total_seconds()
+                    stream.copy_to(video_filename, seconds=duration+5)
+                    stream.clear()
+
+                    movementData = {}
+                    files = {}
+                    movementData["start_date"] = str(movementStartDate)
+                    movementData["end_date"] = str(movementEndDate)
+                    movementData["audio"] = "audioKey"
+                    movementData["weight"] = np.median(values)
+                    movementData["video"] = "videoKey"
+
+                    # stop audio recording and move temporary file to output directory
+                    terminate_recorder()
+                    shutil.move(temp_audio_filename, audio_filename)
+
+                    files['audioKey'] = (os.path.basename(audio_filename), open(audio_filename, 'rb'))
+                    files['videoKey'] = (os.path.basename(video_filename), open(video_filename, 'rb'))
 
 
+                    if (environmentData != None):
+                        movementData["environment"] = environmentData
+                    else:
+                        movementData["environment"] = {}
 
-   while True:
-       try:
-           schedule.run_pending()
-           
-           weight = hx.get_weight(15)  
-           
-           if (weight < weightThreshold  and len(values) == 0):
-              logging.info("Waiting for movement! (currently measured weight: " + str(weight) + ")")
-           
-           # start movement if weight higher than threshold is recognized 
-           if (weight > weightThreshold and len(values) == 0):
-              logging.info("Movement recognized!") 
-              movementStartDate = datetime.now()
-              set_filenames(movementStartDate)
-              
-              global recorder
-              recorder = Process(target=record, args=(temp_audio_filename,))
-              recorder.start()
-              
-              camera.wait_recording(1) # continue camera recording 
-            
-              values.append(weight) # add current weight to weight list 
+                    logging.info("Movement Data: ")
+                    logging.info(movementData)
 
-           else: 
-           # continue movement if currently recognized weight is above threshold 
-              if (weight > weightThreshold):
-                 values.append(weight)
-                 camera.wait_recording(1)
+                    files["json"] = (None, json.dumps(movementData), 'application/json')
 
-                 logging.info("Currently measured weight: " + str(weight))
+                    movement_id = send_realtime_movement(files)
+                    print("Movement ID:", movement_id)
 
-           hx.reset()          
-        
-           # stop movement if weight is below threshold 
-           if (weight < weightThreshold):
-              if (len(values) >= 1):
-                 logging.info("Movement ending!") 
-                 movementEndDate = datetime.now() 
-                 
-                 duration = (movementEndDate - movementStartDate).total_seconds()                 
-                 stream.copy_to(video_filename, seconds=duration+5)
-                 stream.clear()
-                                                   
-                 movementData = {}
-                 files = {}
-                 movementData["start_date"] = str(movementStartDate)
-                 movementData["end_date"] = str(movementEndDate)
-                 movementData["audio"] = "audioKey"
-                 movementData["weight"] = np.median(values)
-                 movementData["video"] = "videoKey"
-                 
-                 # stop audio recording and move temporary file to output directory 
-                 terminate_recorder()
-                 shutil.move(temp_audio_filename, audio_filename)
-                 
-                 files['audioKey'] = (os.path.basename(audio_filename), open(audio_filename, 'rb'))
-                 files['videoKey'] = (os.path.basename(video_filename), open(video_filename, 'rb'))
+                    if not isinstance(movement_id, dict) or "id" not in movement_id:
+                        print("Error: movement_id is not a dictionary or has no key 'id'")
+                    else:
+                        movementData["id"] = movement_id["id"]
+                        print("Movement ID successful added to Movement_data:", movementData["id"])
+                    send_movement_mqtt(boxId, movementData)
 
-                 
-                 if (environmentData != None):
-                    movementData["environment"] = environmentData
-                 else: 
-                    movementData["environment"] = {}
-                 
-                 logging.info("Movement Data: ")
-                 logging.info(movementData)
-                 
-                 files["json"] = (None, json.dumps(movementData), 'application/json')
+                    values = []
 
-                 send_realtime_movement(files)
-                 
-                 values = []
+        except (KeyboardInterrupt, SystemExit):
+            cleanAndExit()
 
-                 
-       except (KeyboardInterrupt, SystemExit):
-           cleanAndExit()
-           
 def cleanAndExit():
   camera.close()
   terminate_recorder()
   sys.exit(2)
-  
+
 def terminate_recorder():
   global recorder
   if recorder is not None and recorder.is_alive():
@@ -347,7 +435,7 @@ def terminate_recorder():
     logging.info("terminated recorder")
   else:
     logging.debug("no alive recorder")
-    
+
 #Function to send environment data to the server
 def send_environment(filename, server_url, box_id):
 	try:
@@ -355,7 +443,7 @@ def send_environment(filename, server_url, box_id):
 			data = json.load(envFile)
 	except:
 		os.remove(filename)
-		
+
 	if dev_mode:
 		logging.warning('send_environment deactivated')
 		logging.warning('received: ' + str(data))
@@ -368,10 +456,10 @@ def send_environment(filename, server_url, box_id):
 			logging.warning('No internet connection. ' + str(exception))
 		else:
 			os.remove(filename)
-			
+
 # Function to send movement data to the server
 def send_movement(video_filename, audio_filename, data_filename, server_url, box_id):
-	try: 
+	try:
 		with open(data_filename, 'r') as dataFile:
 			data = json.load(dataFile)
 		files = {}
@@ -382,9 +470,9 @@ def send_movement(video_filename, audio_filename, data_filename, server_url, box
 		os.remove(video_filename)
 		os.remove(audio_filename)
 		os.remove(data_filename)
-		
 
-		
+
+
 	if dev_mode:
 		logging.warning('send_movement deactivated')
 		logging.warning('received: ' + str(video_filename) + ' ' + str(audio_filename) + ' ' + str(data_filename))
@@ -406,16 +494,16 @@ def send_data():
 	environmentFiles = sorted(glob.glob('environments/*.json'))
 	videoFiles = sorted(glob.glob('savedMovements/*.h264'))
 	audioFiles = sorted(glob.glob('savedMovements/*.wav'))
-	dataFiles = sorted(glob.glob('savedMovements/*.json'))	
+	dataFiles = sorted(glob.glob('savedMovements/*.json'))
 
 	for file in environmentFiles:
 		send_environment(file, serverUrl, boxId)
 	for (video, audio, data) in zip(videoFiles, audioFiles, dataFiles):
 		send_movement(video, audio, data, serverUrl, boxId)
 	logging.info('All stored data send!')
-        
+
 logging.info("Start Birdiary!")
-track_movement() 
+track_movement()
 
 
 

@@ -2,8 +2,7 @@
 #get latest raspbian os packages
 testfile=~/station/restartmarker
 
-if test -f "$testfile";
-then
+if [ -f "$testfile" ]; then
   printf "\033[0;35m####### Welcome Back we will proceed with the tasks #######\n\n"
   rm restartmarker
 else
@@ -14,8 +13,7 @@ else
   printf "\033[0;35mRestart now y/n ?[n]\033[0m\n"
   read -t 10 -n 1 Result
 
-  if [ "$Result" == y ]
-  then
+  if [ "$Result" == "y" ]; then
     printf "#####  Restart now ####\n"
     printf "#####  BYE! ####\n"
     touch restartmarker
@@ -28,6 +26,9 @@ printf "\033[0;35m####### Install general python packages#######\033[0m\n"
 # General
 pip3 install pyyaml
 pip3 install schedule
+pip3 install tzlocal
+pip3 install pytz
+pip3 install paho-mqtt
 pip3 install --upgrade numpy
 
 printf "\033[0;35m####### Install Senors #######\033[0m\n"
