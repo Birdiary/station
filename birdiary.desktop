@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Birdiary Script Start
-Comment=Startet benutzerdefiniertes Skript
+Comment=Start Birdiary via terminal
 Exec=/usr/bin/lxterm -e 'bash ~/station/startup.sh & bash ~/station/internetTest.sh'
 Type=Application
 Terminal=true

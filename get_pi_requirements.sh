@@ -48,8 +48,11 @@ printf "\033[0;35m####### Set Autostart #######\033[0m\n"
 # autostart
 yes | sudo apt-get install xterm
 mkdir -p ~/.config/autostart
-cp ~/station/lxterm-autostart.desktop ~/.config/autostart
-#Desktop Starter
+# change xterm font to avoid error
+cp ~/station/birdiary.desktop ~/.config/autostart
+printf "xterm*faceName: UbuntuMono \nxterm*faceSize: 10" > ~/.Xresources
+xrdb -merge ~/.Xresources 
+#add Desktop Starter
 ##change ~/station to absolute Path, because ~ is not working for Starter.
 sed -i "s|~/station|$HOME/station|g" birdiary.desktop
 ## copy modified starter to Desktop
