@@ -39,7 +39,7 @@ sudo apt-get install libgpiod2
 sudo pip3 install --upgrade adafruit-python-shell
 wget https://raw.githubusercontent.com/adafruit/Raspberry-Pi-Installer-Scripts/master/i2smic.py
 printf '%s\n' y n | sudo python3 i2smic.py
-yes | sudo apt-get install libatlas-base-dev libportaudio2 libasound-dev gfortran libopenblas-dev cmake
+yes | sudo apt-get install libatlas-base-dev libportaudio2 libasound-dev gfortran libopenblas-dev cmake python3-pydub
 yes | python3 -m pip install --user sounddevice
 python3 -m pip install --user scipy
 pip3 install SoundFile
