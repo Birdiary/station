@@ -54,7 +54,7 @@ Zur Info: Eingaben im Terminal können getätigt werden, wenn die (grüne) Zeile
 - Eingabe im Terminal: `sudo python3 i2smic.py`
   - Bestätige 'Load on reboot' mit `y` -> Enter
 - Für die vorherigen drei Schritte ist eine detaillierte Anleitung unter folgendem Link zu finden: https://learn.adafruit.com/adafruit-i2s-mems-microphone-breakout/raspberry-pi-wiring-test 
-- Eingabe im Terminal: `sudo apt-get install libatlas-base-dev libportaudio2 libasound-dev`
+- Eingabe im Terminal: `sudo apt-get install libatlas-base-dev libportaudio2 libasound-dev gfortran libopenblas-dev cmake python3-pydub`
 - Eingabe im Terminal: `python3 -m pip install --user sounddevice`
   - Gegebenenfalls im Terminal bestätigen durch die Eingabe von `j` und Enter. 
 - Eingabe im Terminal: `python3 -m pip install --user scipy`

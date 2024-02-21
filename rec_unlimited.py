@@ -35,11 +35,11 @@ def callback(indata, frames, time, status):
     q.put(indata.copy())
 
 
-def record(filename=(os.environ['HOME'] + '/station/movements/sound.wav'),
+def record(filename=(os.environ['HOME'] + '/station/movements/sound.raw'),
            samplerate=48000,
            device='snd_rpi_i2s_card',
            channels=1,
-           subtype=None):
+           subtype='PCM_16'):
     print('Starting to record to ' + filename)
     try:
         if samplerate is None:
