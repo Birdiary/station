@@ -134,15 +134,25 @@ Die Belegung und Nummerierung der Pins / Ports des Raspberry Pi kann unter ander
   - Bestätigung mit `J` -> Enter  
 - Eingabe im Terminal: `mkdir -p ~/.config/autostart`
   - (Das Terminal gibt kein Feedback bei erfolgreicher Ausführung, außer, dass eine neue Zeile und keine Fehlermeldung erscheinen)  
-- Eingabe im Terminal: `nano ~/.config/autostart/lxterm-autostart.desktop`
+- Eingabe im Terminal: `nano ~/.config/autostart/birdiary.desktop`
 - In der Datei einfügen: 
 ```
 [Desktop Entry]
-Encoding=UTF-8
-Name=Terminal autostart
-Comment=Start a terminal and list directory
-Exec=/usr/bin/lxterm -e 'bash ~/station/startup.sh'
+Name=Birdiary Script Start
+Comment=Start Birdiary via terminal
+Exec=/usr/bin/lxterm -e 'bash ~/station/startup.sh & bash ~/station/internetTest.sh'
+Type=Application
+Terminal=true
+Icon=~/station/files/birdiary.png
+Categories=Utility;
 ```
 - `Strg`+ `O` 
 - `Enter`
+- Eingabe im Terminal: `nano ~/.Xresources`
+- In der Datei einfügen: 
+```
+xterm*faceName: UbuntuMono
+xterm*faceSize: 10
+```
+- Eingabe im Terminal: `xrdb -merge ~/.Xresources`
 - Eingabe im Terminal: `sudo reboot`
