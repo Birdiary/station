@@ -7,8 +7,53 @@ station:
   calibration_weight: 0 
   terminal_weight: 0 
   cameraRotation: 180
-  weightResetInMinutes: 20 
-  audio_gain: +20 #audio_gain is to lift the volume of the microphone.To high values generate white noice, to low doesn't change anything
+  weightResetInMinutes: 20
+  audio_gain: +20
+  #If a Distancesensor is added set this to true
+environment_values:
+  temperature : true
+  humidity: true
+  air-pressure: true
+  silolevel: true
+sensors:
+  temperature:
+    #0- None 1-DHT22 2-BME280
+    type: 1
+  humidity:
+    #0- None 1-DHT22 2-BME280
+    type: 2
+  air-pressure:
+    #0-None 2-BME280
+    type: 2
+    #pressure at sea-level
+    sea_level_pressure: 1013.25
+  silolevel:
+    #0-None 5-vl53l0x
+    type: 5
+hardware:
+  # This section defines GPIO Ports, and other hardware dependent Value for each Sensor
+  DHT22:
+    #Default DATA_PIN:16
+    DATA_PIN: 16
+  HX711:
+    #Default SCK_PIN: 23,DT_PIN:17
+    SCK_PIN: 23
+    DT_PIN: 17
+  SPH0645KM4H:
+    #Default LRCL_PIN: 19,OUT_PIN:20, CLK_PIN:18
+    LRCL_PIN: 19
+    OUT_PIN: 20
+    CLK_PIN: 18
+  vl53l0x:
+    #Default GPIO1_PIN: 4, XSHUT_PIN: 26, corr_value:0, full_value: 214
+    GPIO1_PIN: 4
+    XSHUT_PIN: 26
+    empty_value: 56
+    full_value: 214
+    i2cAddress: 0x29
+  BME280:
+    i2cAddress: 0x76
 misc:
   loglevel: 20 # loglevel can be either 0-NOTSET, 10-DEBUG, 20-INFO, 30-WARNING, 40-ERROR, 50-CRITICAL
-  dev_mode: No # Yes - for testing, nothing is send to the server, No - normal usage, sync to server is enabled
+  dev_mode: No # Yes - for testing, nothing is sent to the server, No - normal usage, sync to server is enabled
+
