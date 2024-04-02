@@ -7,8 +7,45 @@ station:
   calibration_weight: 0 
   terminal_weight: 0 
   cameraRotation: 180
-  weightResetInMinutes: 20 
-  audio_gain: +20 #audio_gain is to lift the volume of the microphone.To high values generate white noice, to low doesn't change anything
+  weightResetInMinutes: 20
+  audio_gain: +20
+environment_values:
+  temperature : true
+  humidity: true
+  #If a Distancesensor is added set this to true
+  silolevel: false
+sensors:
+  temperature:
+    #0- None 1-DHT22
+    type: 1
+  humidity:
+    #0- None 1-DHT22
+    type: 1
+  silolevel:
+    #0-None 5-vl53l0x
+    type: 5
+hardware:
+  # This section defines GPIO Ports, and other hardware dependent values for each Sensor
+  DHT22:
+    #Default DATA_PIN:16
+    DATA_PIN: 16
+  HX711:
+    #Default SCK_PIN: 23,DT_PIN:17
+    SCK_PIN: 23
+    DT_PIN: 17
+  SPH0645KM4H:
+    #Default LRCL_PIN: 19,OUT_PIN:20, CLK_PIN:18
+    LRCL_PIN: 19
+    OUT_PIN: 20
+    CLK_PIN: 18
+  vl53l0x:
+    #Default GPIO1_PIN: 4, XSHUT_PIN: 26, i2cAddress: 0x29
+    GPIO1_PIN: 4
+    XSHUT_PIN: 26
+    empty_value: 0
+    full_value: 0
+    i2cAddress: "0x29"
 misc:
   loglevel: 20 # loglevel can be either 0-NOTSET, 10-DEBUG, 20-INFO, 30-WARNING, 40-ERROR, 50-CRITICAL
-  dev_mode: No # Yes - for testing, nothing is send to the server, No - normal usage, sync to server is enabled
+  dev_mode: No # Yes - for testing, nothing is sent to the server, No - normal usage, sync to server is enabled
+

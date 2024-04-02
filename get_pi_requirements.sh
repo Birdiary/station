@@ -26,13 +26,13 @@ else
 fi
 printf "\033[0;35m####### Install general python packages#######\033[0m\n"
 # General
-pip3 install pyyaml
+pip3 install pyyaml ruamel.yaml
 pip3 install schedule
 pip3 install --upgrade numpy
 
 printf "\033[0;35m####### Install Senors #######\033[0m\n"
 # Sensors
-sudo pip3 install adafruit-circuitpython-dht
+sudo pip3 install adafruit-circuitpython-dht adafruit-circuitpython-vl53l0x
 sudo apt-get install libgpiod2
 
 # Microphone
@@ -55,8 +55,10 @@ xrdb -merge ~/.Xresources
 #add Desktop Starter
 ##change ~/station to absolute Path, because ~ is not working for Starter.
 sed -i "s|~/station|$HOME/station|g" birdiary.desktop
+sed -i "s|~/station|$HOME/station|g" silolevel_calibrate.desktop
 ## copy modified starter to Desktop
 cp ~/station/birdiary.desktop ~/Desktop
+cp ~/station/silolevel_calibrate.desktop ~/Desktop
 
 # activate the HDMI output, even if no monitor is detected
 sudo sed -i '3ahdmi_force_hotplug=1' /boot/config.txt
