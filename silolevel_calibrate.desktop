@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=SiloLevel Calibrate
+Type=Application
+Terminal=false
+Comment=Start Silolevel calibration tool
+Icon=~/station/files/birdSilo.png
+Exec=~/station/silolevel_calibrate.py
+Categories=Utility
+X-KeepTerminal=true
+Path=~/station

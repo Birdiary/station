@@ -14,6 +14,7 @@ import glob
 import requests
 
 dev_mode = False
+silolevel_active: bool = False
 if not dev_mode:
     import requests
 
@@ -118,6 +119,36 @@ from board import *
 SENSOR_PIN = D16  # use not board but GPIO number
 dht22 = adafruit_dht.DHT22(SENSOR_PIN, use_pulseio=False)
 
+# Set Silolevel Sensor
+logging.info("Setup Silolevel Sensor!")
+if yamlData["environment_values"]["silolevel"]:
+    if yamlData["hardware"]["vl53l0x"]["empty_value"] == 0 and yamlData["hardware"]["vl53l0x"]["empty_value"] == 0:
+        silolevel_active = False
+        logging.warning("Silolevel Sensor not calibrated yet. Please calibrate the sensor first")
+        print("\033[91mSilolevel Sensor not calibrated yet. Please calibrate the sensor first. Will start without the "
+              "Sensor\033[0m")
+        time.sleep(1)
+    else:
+        try:
+            import silolevel
+            try:
+                silo = silolevel.SiloLevelSensor(int(yamlData["hardware"]["vl53l0x"]["GPIO1_PIN"]),
+                                                 int(yamlData["hardware"]["vl53l0x"]["XSHUT_PIN"]),
+                                                 yamlData["hardware"]["vl53l0x"]["i2cAddress"])
+                logging.debug("Silolevel Sensor initiated")
+                silolevel_active = True
+            except (ValueError, IOError):
+                silolevel_active = False
+                logging.error("Sensor not found! Check the connections")
+        except ModuleNotFoundError:
+            silolevel_active = False
+            logging.error("WARNING! Silolevel Sensor Library not installed, start Script without Sensor\n Please "
+                          "restart get_pi_requirements.sh")
+            time.sleep(1)
+else:
+    silolevel_active = False
+    logging.debug("Silolevel Sensor deactivated in configuration")
+    print("Silolevel Sensor deactivated in configuration")
 # Setup Balance
 logging.info("Setup balance!")
 EMULATE_HX711 = False
@@ -147,8 +178,10 @@ logging.info("Setup microphone!")
 from rec_unlimited import record
 from multiprocessing import Process
 from pydub import AudioSegment  # for converting the raw to mp3
+
 audio_gain = yamlData["station"]["audio_gain"]
-logging.info("Setup finished!") 
+logging.info("Setup finished!")
+
 
 def write_environment(environment_data):
     filename = 'environments/' + environment_data['date'] + '.json'
@@ -198,8 +231,29 @@ def send_realtime_environment(environmentData):
             write_environment(environmentData)
         else:
             send_data()
-           
-# Function to track a environment
+
+
+def send_realtime_feed(box_id, feedData: dict = {}):
+    if dev_mode:
+        logging.warning('send_feed deactivated')
+        logging.warning('received: ' + str(feedData))
+    else:
+        try:
+            r = requests.post(serverUrl + "feed/" + str(box_id), json=feedData)
+            print("Silolevel Data send with the corresponding feed_id")
+            print(r.content)
+            logger.info('Silolevel send to Server')
+            logger.debug('Feed Post Request Data: URL: %s ; status_code: %s; Text: %s ;json: %s' %
+                         (r.url, r.status_code, r.text, feedData))
+        except (requests.ConnectionError, requests.Timeout) as exception:
+            logging.warning('No internet connection. ' + str(exception))
+            logging.warning("Saving Silolevel data to send later")
+            # write_environment(environmentData)
+        else:
+            send_data()
+        # Function to track a environment
+
+
 def track_environment():
     try:
         logging.info("Collect Environment Data")
@@ -215,7 +269,7 @@ def track_environment():
     except Exception as e:
         logging.error(e)
 
-        
+
 # predefined variables
 environmentData = None
 audio_filename = None
@@ -225,6 +279,7 @@ save_video_filename = None
 temp_audio_filename = 'temp/audio.raw'  # the filename extension has to be .raw to convert it later to mp3
 data_filename = None
 recorder = None
+feedData: dict = {}
 
 
 def tare():
@@ -250,13 +305,17 @@ def set_filenames(movementStartDate):
     global data_filename
     data_filename = 'savedMovements/' + str(movementStartDate) + '.json'
 
-    
+
 # Function to track a movement
 def track_movement():
     values = []
 
     # schedule an environment track for every x minutes
     schedule.every(environmentTimeDeltaInMinutes).minutes.do(track_environment)
+    track_environment()
+    if silolevel_active:
+        schedule.every(environmentTimeDeltaInMinutes).minutes.do(track_feed)
+        track_feed()
     schedule.every(weightResetInMinutes).minutes.do(tare)
 
     while True:
@@ -313,9 +372,9 @@ def track_movement():
                     # stop audio recording and move temporary file to output directory
                     terminate_recorder()
                     tags_json = dict(title=(movementStartDate.strftime("%Y-%M-%d %H:%m:%S") + '_' + boxId),
-                                  track=1, artist=boxId,
-                                  copyright='www.wiediversistmeingarten.org',
-                                  genre="Noise", date=movementStartDate.strftime("%Y-%M-%d"))
+                                     track=1, artist=boxId,
+                                     copyright='www.wiediversistmeingarten.org',
+                                     genre="Noise", date=movementStartDate.strftime("%Y-%M-%d"))
                     RawAudio = AudioSegment.from_raw(temp_audio_filename, sample_width=2, frame_rate=48000, channels=1)
                     RawAudioVolumeLifted = RawAudio.apply_gain(audio_gain)  # lift up the volume
                     RawAudioVolumeLifted.export(audio_filename, format='mp3', tags=tags_json, id3v2_version="3")
@@ -340,7 +399,26 @@ def track_movement():
         except (KeyboardInterrupt, SystemExit):
             cleanAndExit()
 
-            
+
+def track_feed():
+    try:
+        print("Collect Feed Data")
+        logger.info('Collect Feed Data')
+        feed: dict = {"date": str(datetime.now()),
+                      "silolevel": silo.read_Silolevel(int(yamlData["hardware"]["vl53l0x"]["empty_value"]),
+                                                       int(yamlData["hardware"]["vl53l0x"]["full_value"]))
+                      }
+
+        print("Feed Data: ", feed)
+        logger.info('Feed Data: %s' % feed)
+        send_realtime_feed(boxId, feed)
+        global feedData
+        feedData = feed
+    except Exception as e:
+        print(e)
+        logger.exception(e, exc_info=True)
+
+
 def cleanAndExit():
     camera.close()
     terminate_recorder()
