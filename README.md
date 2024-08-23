@@ -29,7 +29,7 @@ In the following, we list these developments. We would like to inform you that n
 Thank you for considering contributing to Birdiary. Birdiary is an open source project, and we love to receive contributions from our community — you!
 There are many ways to contribute, from writing tutorials or blog posts, improving the design of the station, submitting bug reports and feature requests or writing code which can be incorporated into Birdiary itself.
 We use GitHub to host code, to track issues and feature requests, as well as accept pull requests.
-This Repository comprises the code and issues for the station. Which means, if you want to contribute to the code running on the station, please contribute here. *Contributions in this repository do not have to stick to the code. They can also be about the hardware or design of the station.* Whereas when you want to contribute to the webserver(website), please use this repository [Webserver](https://github.com/Birdiary/webserver).
+This Repository comprises the code and issues for the station. Which means, if you want to contribute to the code running on the station, please contribute here. *Contributions in this repository do not have to stick to the code. They can also be about the hardware or design of the station.* Whereas when you want to contribute to the webserver (website), please use this repository [Webserver](https://github.com/Birdiary/webserver).
 
 ### Reporting Bugs
 If you find a security vulnerability, do NOT open an issue. Email info@wiediversistmeingarten.org instead.
@@ -42,7 +42,7 @@ When filing an issue, make sure to answer these four questions:
 > 3. What did you do?
 > 4. What did you expect to see?
 > 5. What did you see instead?
-> 
+
 ### Suggest Feature
 If you wish a special feature, feel free to add it as new [issue](https://github.com/Birdiary/station/issues/new). Here, please add the label "enhancement". We appreciate any suggestions.
 
