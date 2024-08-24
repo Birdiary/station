@@ -18,7 +18,7 @@ Any further information you can find via: [birdiary.de](https://www.wiediversist
 
 ## Advanced Software Development by the Community 
 Citzien Scientists are driving the project substantially forward, leading to a large number of further developments. This also includes modifications to the code base. 
-Some of these modifications are added directly here in the code (see [Suggest Feature](https://github.com/Birdiary/station?tab=readme-ov-file#suggest-feature)), but some are also hosted in separate repositories. 
+Some of these modifications are added directly here in the code (see [How to Contribute]([https://github.com/Birdiary/station?tab=readme-ov-file#suggest-feature](https://github.com/Birdiary/station?tab=readme-ov-file#how-to-contribute))), but some are also hosted in separate repositories. 
 In the following, we list these developments. We would like to inform you that no guarantee or liability is assumed for their functionality and ask you to contact the respective operators of the repositories directly if you have any questions.  
 
 * [Birdiary Image Raspberry Pi Zero 2 W](https://osf.io/w8gef): The available PDF describes the necessary adjustments needed to enable the Birdiary image to be used on a Raspberry Pi Zero 2 W. 
