@@ -23,7 +23,8 @@ In the following, we list these developments. We would like to inform you that n
 
 * [Birdiary Image Raspberry Pi Zero 2 W](https://osf.io/w8gef): The available PDF describes the necessary adjustments needed to enable the Birdiary image to be used on a Raspberry Pi Zero 2 W. 
 * [betzBirdiary](https://github.com/herbbetz/betzBirdiary): Modified code base that may be of interest to those using the Raspberry Pi Zero 2 W or Raspberry Pi 4 Model B as microcontroller. The repository uses the libraries Picamera2 and Pigpio (for DHT and HX711), is compatible with Bookworm (Raspian Debian 12) and includes a GUI for configuration purposes. 
-* [Birdiary on ESP32](https://github.com/tnier01/BirdiaryStationESP32/): The repository details how to run a Birdiary station using ESP32, especially Seeed Studio XIAO ESP32S3 Sense. 
+* [Birdiary on ESP32](https://github.com/tnier01/BirdiaryStationESP32/): The repository details how to run a Birdiary station using ESP32, especially Seeed Studio XIAO ESP32S3 Sense.
+* [Duisbird](https://duisbird.de/) Members of the Makerspace at VHS Duisburg developed their own version of the station based on ESP32S3 which is advanced compared to the other implementations, optimizing several aspects. You can find the information on the respective website: [https://duisbird.de/](https://duisbird.de/).
 
 ## How to Contribute
 Thank you for considering contributing to Birdiary. Birdiary is an open source project, and we love to receive contributions from our community — you!
